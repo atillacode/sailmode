@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sailmode for iPhone Duo: remote control for your Mac</title>
+<meta name="description" content="The most delightful way to see and control your Mac from your iPhone Duo.">
+<meta property="og:title" content="Sailmode for iPhone Duo">
+<meta property="og:description" content="The most delightful way to see and control your Mac from your iPhone Duo.">
+<meta property="og:image" content="https://atillacode.github.io/sailmode/icon.png">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="preconnect" href="https://stream.mux.com">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="hero">
+  <img class="icon" src="icon.png" width="144" height="144" alt="Sailmode">
+  <h1>Sailmode for iPhone Duo.</h1>
+  <p class="sub"><span>The most delightful way to see and control</span> <span>your Mac from your iPhone Duo.</span></p>
+  <p class="soon"><span>Coming soon.</span> <span>Follow <a href="https://x.com/sailmode">@sailmode</a> for more.</span></p>
+  <div class="film">
+    <video id="film" autoplay muted loop playsinline controls preload="auto"
+           poster="https://image.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00/thumbnail.webp?time=0&amp;width=1920"
+           aria-label="Sailmode on iPhone Duo"></video>
+  </div>
+</main>
+<footer class="legal-links">
+  <a href="privacy/">Privacy Policy</a>
+  <a href="legal/">Legal Notice</a>
+</footer>
+<script>
+  // The film streams from Mux. Safari plays the stream by itself; other browsers get hls.js, a small open-source
+  // player, and only the size the page shows. Some say they can play it themselves and then can't: hls.js then too.
+  // No viewer tracking either way.
+  const stream = "https://stream.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00.m3u8";
+  const video = document.getElementById("film");
+  if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    video.addEventListener("error", playWithHls, { once: true });
+    video.src = stream;
+  } else {
+    playWithHls();
+  }
+  function playWithHls() {
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.light.min.js";
+    script.integrity = "sha384-y8wQxRLtNclrHbMBLBLTEkgUrdFu6uWzZiobE1wBE09nt2wHIZlBPvPepdZU4+MM";
+    script.crossOrigin = "anonymous";
+    script.onload = () => {
+      if (!window.Hls || !Hls.isSupported()) return;
+      const hls = new Hls({ capLevelToPlayerSize: true });
+      hls.loadSource(stream);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
+    };
+    document.head.append(script);
+  }
+</script>
+<script type="module">
+  // Squircle corners, the continuous curve of iOS, from Lisse (corne.rs); redrawn whenever the film changes size.
+  import { generateClipPath, observeResize } from "https://cdn.jsdelivr.net/npm/@lisse/core@0.7.3/dist/index.js";
+  const video = document.getElementById("film");
+  const shape = () => {
+    const { width, height } = video.getBoundingClientRect();
+    if (!width || !height) return;
+    const radius = Math.round(Math.min(52, Math.max(32, width * 0.056)));
+    video.style.clipPath = generateClipPath(width, height, { radius, smoothing: 0.6 });
+    video.classList.add("squircle");
+  };
+  shape();
+  observeResize(video, shape);
+</script>
+</body>
+</html>

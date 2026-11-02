@@ -1,0 +1,129 @@
+/* Sailmode's look, as the Mac app's setup has it (Host-macOS/App/SailmodeStyle.swift): by day a sky from a breath
+   of the icon's turquoise down to nearly white, at night navy into blue; sea-blue ink by day, white at night, and a
+   soft sea blue for what's second. Display P3 where the screen has it, as in the app. */
+:root {
+  --sky-top: #dbf3f7;
+  --sky-mid: #ecf7fa;
+  --sky-end: #f1f9fb;
+  --ink: #054a73;
+  --quiet: #4d758f;
+  --accent: #007dad;
+  --card: rgba(255, 255, 255, 0.72);
+  --card-edge: rgba(255, 255, 255, 0.9);
+  --shade: rgba(0, 51, 79, 0.22);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+@supports (color: color(display-p3 0 0 0)) {
+  :root {
+    --sky-top: color(display-p3 0.86 0.955 0.97);
+    --sky-mid: color(display-p3 0.925 0.97 0.98);
+    --sky-end: color(display-p3 0.945 0.975 0.985);
+    --ink: color(display-p3 0.02 0.29 0.45);
+    --quiet: color(display-p3 0.30 0.46 0.56);
+    --accent: color(display-p3 0 0.49 0.68);
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sky-top: #001c3b;
+    --sky-mid: #054575;
+    --sky-end: #086699;
+    --ink: #ffffff;
+    --quiet: #b3cce0;
+    --accent: #29a8db;
+    --card: rgba(255, 255, 255, 0.1);
+    --card-edge: rgba(255, 255, 255, 0.16);
+    color-scheme: dark;
+  }
+  @supports (color: color(display-p3 0 0 0)) {
+    :root {
+      --sky-top: color(display-p3 0 0.11 0.23);
+      --sky-mid: color(display-p3 0.02 0.27 0.46);
+      --sky-end: color(display-p3 0.03 0.40 0.60);
+      --quiet: color(display-p3 0.70 0.80 0.88);
+      --accent: color(display-p3 0.16 0.66 0.86);
+    }
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; background: var(--sky-top); }
+body {
+  margin: 0; min-height: 100vh; min-height: 100svh;
+  display: flex; flex-direction: column;
+  color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased;
+}
+/* The sky stays put behind the page as it scrolls, on iPhone too (where a fixed background doesn't). */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1;
+  background: linear-gradient(var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-end) 100%);
+}
+
+/* The links at the very bottom of every page, small and half see-through. Nothing on the site moves: it's just there. */
+.legal-links {
+  margin-top: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px;
+  padding: 56px max(16px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  font-size: 12px; color: var(--quiet);
+}
+.legal-links a { color: inherit; text-decoration: none; opacity: 0.5; }
+.legal-links a:hover { opacity: 1; }
+
+/* The home page: the app icon, the headline and the line under it, then the video. */
+.hero {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: max(12vh, 64px) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
+}
+/* With the soft shadow the setup gives the icon. */
+.hero .icon { display: block; width: 144px; height: 144px; filter: drop-shadow(0 9px 18px rgba(0, 0, 0, 0.14)); }
+.hero h1 {
+  margin: 32px 0 0; max-width: 17ch; text-wrap: balance;
+  font-size: clamp(32px, 5.4vw, 56px); line-height: 1.08; font-weight: 600; letter-spacing: -0.025em;
+}
+/* Two lines, the first the longer, narrowing like a funnel; small enough on a phone that each stays one line. */
+.hero .sub {
+  margin: 14px 0 0;
+  font-size: clamp(15px, 4.2vw, 21px); line-height: 1.4; color: var(--quiet);
+}
+.hero .sub span { display: block; }
+.hero .soon { margin: 28px 0 0; font-size: 15px; line-height: 1.4; color: var(--quiet); }
+.hero .soon span { display: block; }
+.hero .soon a { color: var(--accent); font-weight: 500; text-decoration: none; }
+.hero .soon a:hover { text-decoration: underline; text-underline-offset: 2px; }
+/* The film, its corners Lisse's squircle (corne.rs) once that has loaded, plain rounded until then. The shadow sits
+   on the frame around it, as the video's own would be cut off with its corners. */
+.hero .film {
+  width: min(960px, 100%); margin-top: 40px;
+  filter: drop-shadow(0 6px 12px var(--shade));
+}
+.hero video {
+  display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover;
+  border-radius: 44px;
+}
+.hero video.squircle { border-radius: 0; }
+
+/* The legal pages: Sailmode at the top, the text on a white card, as the setup's cards sit on the sky. */
+.doc-top {
+  width: min(760px, 100% - 32px); margin: 0 auto;
+  padding-top: max(28px, env(safe-area-inset-top));
+}
+.doc-top a { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-size: 17px; font-weight: 600; }
+.doc-top img { width: 36px; height: 36px; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.14)); }
+.doc {
+  width: min(760px, 100% - 32px); margin: 24px auto 0;
+  padding: clamp(24px, 5vw, 48px);
+  background: var(--card); border: 0.5px solid var(--card-edge); border-radius: 24px;
+  font-size: 15.5px; line-height: 1.6;
+}
+.doc h1 { margin: 0; font-size: clamp(28px, 4.4vw, 38px); line-height: 1.15; font-weight: 600; letter-spacing: -0.02em; }
+.doc .updated { margin: 6px 0 0; font-size: 14px; color: var(--quiet); }
+.doc .lead { margin: 24px 0 0; font-size: 17px; }
+.doc .updated + p { margin-top: 24px; }
+.doc h2 { margin: 44px 0 0; font-size: 21px; line-height: 1.3; font-weight: 600; letter-spacing: -0.01em; }
+.doc h3 { margin: 26px 0 0; font-size: 16px; line-height: 1.35; font-weight: 600; }
+.doc p, .doc ul { margin: 8px 0 0; }
+.doc ul { padding-left: 20px; }
+.doc li + li { margin-top: 4px; }
+.doc address { margin: 8px 0 0; font-style: normal; }
+.doc a { color: var(--accent); text-underline-offset: 2px; }
+.doc a:hover { text-decoration-thickness: 2px; }
