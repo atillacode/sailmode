@@ -85,7 +85,7 @@ body::before {
 /* Two lines, the first the longer, narrowing like a funnel; small enough on a phone that each stays one line. */
 .hero .sub {
   margin: 14px 0 0;
-  font-size: clamp(15px, 4.2vw, 21px); line-height: 1.4; color: var(--quiet);
+  font-size: clamp(16px, 4.5vw, 24px); line-height: 1.4; color: var(--quiet);
 }
 .hero .sub span { display: block; }
 .hero .soon { margin: 28px 0 0; font-size: 15px; line-height: 1.4; color: var(--quiet); }
