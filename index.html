@@ -14,7 +14,7 @@
 </head>
 <body>
 <main class="hero">
-  <img class="icon" src="icon.png" width="144" height="144" alt="Sailmode">
+  <img class="icon" src="icon-hero.png" width="224" height="224" alt="Sailmode">
   <h1>Sailmode for iPhone Duo.</h1>
   <p class="sub"><span>The most delightful way to see and control</span> <span>your Mac from your iPhone Duo.</span></p>
   <p class="soon"><span>Coming soon.</span> <span>Follow <a href="https://x.com/sailmode">@sailmode</a> for more.</span></p>
@@ -64,10 +64,12 @@
     if (!width || !height) return;
     const radius = Math.round(Math.min(52, Math.max(32, width * 0.056)));
     video.style.clipPath = generateClipPath(width, height, { radius, smoothing: 0.6 });
+    video.parentElement.style.borderRadius = `${radius}px`;
     video.classList.add("squircle");
   };
   shape();
   observeResize(video, shape);
 </script>
+<!-- Cloudflare Web Analytics: counts visits, without cookies. --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "142a9ddf4b6b43f39f963246700cc026"}'></script>
 </body>
 </html>

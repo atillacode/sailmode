@@ -74,8 +74,10 @@ body::before {
   display: flex; flex-direction: column; align-items: center; text-align: center;
   padding: max(12vh, 64px) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
 }
-/* With the soft shadow the setup gives the icon. */
-.hero .icon { display: block; width: 144px; height: 144px; filter: drop-shadow(0 9px 18px rgba(0, 0, 0, 0.14)); }
+/* The icon at 144 points with the setup's soft shadow drawn into the picture (Tools/Website/shadowed-icon.swift)
+   and 40 points around it for that shadow, taken back by the margin: a CSS shadow, Safari cut off at the picture's
+   edges for a moment after loading. */
+.hero .icon { display: block; width: 224px; height: 224px; margin: -40px; }
 .hero h1 {
   margin: 32px 0 0; max-width: 17ch; text-wrap: balance;
   font-size: clamp(32px, 5.4vw, 56px); line-height: 1.08; font-weight: 600; letter-spacing: -0.025em;
@@ -91,10 +93,11 @@ body::before {
 .hero .soon a { color: var(--accent); font-weight: 500; text-decoration: none; }
 .hero .soon a:hover { text-decoration: underline; text-underline-offset: 2px; }
 /* The film, its corners Lisse's squircle (corne.rs) once that has loaded, plain rounded until then. The shadow sits
-   on the frame around it, as the video's own would be cut off with its corners. */
+   on the frame around it, rounded to match, as the video's own would be cut off with its corners; a plain box shadow,
+   which Safari draws whole from the start. */
 .hero .film {
   width: min(960px, 100%); margin-top: 40px;
-  filter: drop-shadow(0 6px 12px var(--shade));
+  border-radius: 44px; box-shadow: 0 6px 18px var(--shade);
 }
 .hero video {
   display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover;
@@ -108,7 +111,7 @@ body::before {
   padding-top: max(28px, env(safe-area-inset-top));
 }
 .doc-top a { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-size: 17px; font-weight: 600; }
-.doc-top img { width: 36px; height: 36px; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.14)); }
+.doc-top img { width: 56px; height: 56px; margin: -10px; }
 .doc {
   width: min(760px, 100% - 32px); margin: 24px auto 0;
   padding: clamp(24px, 5vw, 48px);
