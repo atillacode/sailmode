@@ -70,6 +70,21 @@ body::before {
 }
 .legal-links a { color: inherit; text-decoration: none; opacity: 0.5; }
 .legal-links a:hover { opacity: 1; }
+/* Who made it, on a line of its own above them. */
+.legal-links .credit { flex-basis: 100%; margin: 0 0 8px; text-align: center; font-size: 13px; }
+.legal-links .credit a { opacity: 1; color: var(--accent); font-weight: 500; }
+
+/* The other links: the accent colour, no underline, and pointed at, a pill of the same colour behind them, a fifth as
+   strong. The pill sits snugly, about as far from the word at its ends as above and below it (the line's own space
+   above and below the letters makes up the rest), reaches past the word without moving it, and wraps with it. */
+.hero .soon a, .faq a, .doc a, .legal-links .credit a {
+  text-decoration: none; border-radius: 999px; padding: 0.04em 0.3em; margin: -0.04em -0.3em;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: background-color 0.2s ease;
+}
+:is(.hero .soon a, .faq a, .doc a, .legal-links .credit a):is(:hover, :focus-visible) {
+  background-color: color-mix(in srgb, currentColor 20%, transparent);
+}
 
 /* The home page: the app icon, the headline and the line under it, then the video. */
 .hero {
@@ -92,20 +107,112 @@ body::before {
 .hero .sub span { display: block; }
 .hero .soon { margin: 28px 0 0; font-size: 15px; line-height: 1.4; color: var(--quiet); }
 .hero .soon span { display: block; }
-.hero .soon a { color: var(--accent); font-weight: 500; text-decoration: none; }
-.hero .soon a:hover { text-decoration: underline; text-underline-offset: 2px; }
-/* The film, its corners Lisse's squircle (corne.rs) once that has loaded, plain rounded until then. The shadow sits
-   on the frame around it, rounded to match, as the video's own would be cut off with its corners; a plain box shadow,
-   which Safari draws whole from the start. */
-.hero .film {
-  width: min(960px, 100%); margin-top: 40px;
-  border-radius: 44px; box-shadow: 0 6px 18px var(--shade);
+.hero .soon a { color: var(--accent); font-weight: 500; }
+/* The films: the big one playing in the middle of the page, the other small beside it, dimmed, with a white play
+   button: first on the right, and after a swap on the side the big one leaves to. On a phone the small one sits
+   centred under the big one. Tapping the small one swaps them (index.html).
+   Corners are Lisse's squircle (corne.rs) once that has loaded, plain rounded until then. The shadow sits on the
+   film around its clipped picture, rounded to match, as the picture's own would be cut off with its corners. */
+/* Three columns, the sides equal, so the big film stays in the middle of the page whichever side the small one is on. */
+.films {
+  width: min(1400px, 100%); margin-top: 40px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 4.4fr) minmax(0, 1fr); align-items: center;
+  gap: clamp(16px, 2vw, 24px);
+  /* Sideways swipes are the films' own (index.html); up and down still scrolls, and pinching still zooms. */
+  touch-action: pan-y pinch-zoom;
 }
-.hero video {
-  display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover;
-  border-radius: 44px;
+/* Ready to move: each film on a layer of its own before a swap starts, so the first frame doesn't stall. */
+.film { position: relative; margin: 0; border-radius: 44px; box-shadow: 0 6px 18px var(--shade); will-change: transform; }
+.film.is-big { grid-row: 1; grid-column: 2; }
+.film.is-small.is-left { grid-row: 1; grid-column: 1; }
+.film.is-small.is-right { grid-row: 1; grid-column: 3; }
+@media (max-width: 720px) {
+  .films { grid-template-columns: minmax(0, 1fr); }
+  .film.is-big { grid-column: 1; }
+  .film.is-small.is-left, .film.is-small.is-right { grid-row: 2; grid-column: 1; justify-self: center; width: 46%; }
 }
-.hero video.squircle { border-radius: 0; }
+.film-clip { position: relative; overflow: hidden; border-radius: inherit; }
+.film-clip.squircle { border-radius: 0; }
+.film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #000; }
+/* Over the small film: half black, and a very light grey play button that turns white while pointed at. */
+.film-play {
+  position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 0; border: 0;
+  background: rgba(0, 0, 0, 0.5); color: #d6d6d6; cursor: pointer;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease, color 0.25s ease;
+}
+.film.is-small:hover .film-play, .film-play:focus-visible { color: #fff; }
+.film.is-small .film-play { opacity: 1; pointer-events: auto; }
+.film-play svg { width: clamp(28px, 3.4vw, 40px); height: auto; filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.35)); }
+.film-play:focus-visible { outline: 3px solid #fff; outline-offset: -6px; }
+/* Pointing at the small film draws it 20 points toward the middle, a touch larger, its play button a touch larger
+   still, and the big one steps back to 99 %
+   and 20 points the other way, making room, so the gap between them stays about the same. These use translate and
+   scale, which add to the swap's own transform rather than fight it; during a swap they're off. */
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (min-width: 721px) {
+  .film { transition: translate 0.42s var(--spring, ease-out), scale 0.42s var(--spring, ease-out); }
+  .film.is-small.is-right:hover { translate: -20px 0; scale: 1.04; }
+  .film.is-small.is-left:hover { translate: 20px 0; scale: 1.04; }
+  .films:has(.film.is-small.is-right:hover) .film.is-big { translate: -20px 0; scale: 0.99; }
+  .films:has(.film.is-small.is-left:hover) .film.is-big { translate: 20px 0; scale: 0.99; }
+  .film-play svg { transition: scale 0.42s var(--spring, ease-out); }
+  .film.is-small:hover .film-play svg { scale: 1.08; }
+}
+.films.swapping .film { translate: none !important; scale: none !important; transition: none !important; }
+
+/* The film's own controls, Sailmode's instead of the browser's: one glass bar, well inside the film's corners, with
+   play or pause, where it is, the time, sound and full screen. They show while the pointer is on the film or after a
+   tap, and while it's paused; otherwise they fade away. Only on the big film. The buttons sit as far from the bar's
+   ends as from its top and bottom, each one's circle centred in the rounded end. */
+.film-controls {
+  position: absolute; left: var(--controls-inset); right: var(--controls-inset); bottom: var(--controls-inset);
+  --controls-inset: clamp(16px, 2.4vw, 24px);
+  display: flex; align-items: center; gap: 4px; height: 48px; padding: 0 6px;
+  border-radius: 24px; color: #fff;
+  background: rgba(20, 24, 28, 0.42) no-repeat;
+  -webkit-backdrop-filter: blur(22px) saturate(1.6); backdrop-filter: blur(22px) saturate(1.6);
+  opacity: 0; translate: 0 8px; pointer-events: none;
+  transition: opacity 0.22s ease, translate 0.42s var(--spring, ease-out);
+}
+.film.is-big.controls-on .film-controls { opacity: 1; translate: none; pointer-events: auto; }
+/* A swap takes the leaving film's controls away at once: the film is drawn scaled up from its new small size while it
+   shrinks, so a fading bar would show several times too large. */
+.films.swapping .film-controls { transition: none; }
+.film-controls button {
+  flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin: 0; padding: 0; border: 0;
+  border-radius: 18px; background: none; color: inherit; cursor: pointer;
+}
+.film-controls button:hover { background: rgba(255, 255, 255, 0.14); }
+.film-controls button:focus-visible, .film-controls input:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.film-controls svg { width: 20px; height: 20px; }
+.film-controls .fc-time {
+  flex: none; min-width: 4.6em; padding: 0 6px; font-size: 13px; font-variant-numeric: tabular-nums;
+  text-align: center; opacity: 0.9;
+}
+/* Where the film is: a thin white line, its played part full white, that grows a little while held. */
+.film-controls input[type="range"] {
+  flex: 1 1 auto; min-width: 0; height: 36px; margin: 0 6px; background: none; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  --played: 0%;
+}
+.film-controls input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, #fff var(--played), rgba(255, 255, 255, 0.32) var(--played));
+}
+.film-controls input[type="range"]::-moz-range-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, #fff var(--played), rgba(255, 255, 255, 0.32) var(--played));
+}
+.film-controls input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 12px; height: 12px; margin-top: -4px; border: 0;
+  border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.film-controls input[type="range"]::-moz-range-thumb {
+  width: 12px; height: 12px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+@media (max-width: 480px) {
+  .film-controls { height: 44px; padding: 0 4px; gap: 2px; }
+  .film-controls .fc-time { display: none; }
+}
 
 /* What testers say, under the film: each quote a line as large as the subline, centred, with who said it under it.
    No heading and no cards; still, like the rest of the page. */
@@ -158,8 +265,7 @@ body::before {
 .faq .answer > :last-child { padding-bottom: 20px; }
 .faq .answer ul { padding-left: 20px; }
 .faq .answer li + li { margin-top: 4px; }
-.faq a { color: var(--accent); font-weight: 500; text-decoration: none; }
-.faq a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.faq a { color: var(--accent); font-weight: 500; }
 .faq-more { margin: 40px 0 0; text-align: center; font-size: 15px; line-height: 1.4; color: var(--quiet); }
 @media (max-width: 480px) {
   .faq-card { padding: 0 18px; }
@@ -190,5 +296,4 @@ body::before {
 .doc ul { padding-left: 20px; }
 .doc li + li { margin-top: 4px; }
 .doc address { margin: 8px 0 0; font-style: normal; }
-.doc a { color: var(--accent); text-underline-offset: 2px; }
-.doc a:hover { text-decoration-thickness: 2px; }
+.doc a { color: var(--accent); }

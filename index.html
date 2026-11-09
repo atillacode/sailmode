@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=418e4d7d56">
+<link rel="stylesheet" href="style.css?v=7691d2dcd9">
 </head>
 <body>
 <main class="hero">
@@ -31,10 +31,25 @@
   <h1>Sailmode for iPhone Duo.</h1>
   <p class="sub"><span>The most delightful way to see and control</span> <span>your Mac from your iPhone or iPad.</span></p>
   <p class="soon"><span>Coming soon.</span> <span>Follow <a href="https://x.com/sailmode">@sailmode</a> for more.</span></p>
-  <div class="film">
-    <video id="film" autoplay muted loop playsinline controls preload="auto"
-           poster="https://image.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00/thumbnail.webp?time=0&amp;width=1920"
-           aria-label="Sailmode on iPhone Duo"></video>
+  <!-- Two films: the big one plays in the middle, the small one waits on the right, dimmed with a play button. Tapping
+       the small one brings it to the middle and the big one to the other side (the script at the end of the page). -->
+  <div class="films">
+    <figure class="film is-big" data-playback="DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00">
+      <div class="film-clip">
+        <video muted loop playsinline preload="auto"
+               poster="https://image.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00/thumbnail.webp?time=0&amp;width=1920"
+               aria-label="Sailmode on iPhone Duo"></video>
+        <button class="film-play" type="button" aria-label="Play “Sailmode on iPhone Duo”" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .9 1 1.4 1.7.9l9.4-6.4c.6-.4.6-1.4 0-1.8L9.7 4.7C9 4.2 8 4.7 8 5.6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+      </div>
+    </figure>
+    <figure class="film is-small is-right" data-playback="bZB500qhsIg7VI1GqZ66I3Cz8u00FQC6l1KU4ecXuTISs">
+      <div class="film-clip">
+        <video muted loop playsinline preload="none"
+               poster="https://image.mux.com/bZB500qhsIg7VI1GqZ66I3Cz8u00FQC6l1KU4ecXuTISs/thumbnail.webp?time=0&amp;width=1920"
+               aria-label="The new Sailmode build"></video>
+        <button class="film-play" type="button" aria-label="Play “The new Sailmode build”"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .9 1 1.4 1.7.9l9.4-6.4c.6-.4.6-1.4 0-1.8L9.7 4.7C9 4.2 8 4.7 8 5.6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+      </div>
+    </figure>
   </div>
 
   <!-- What testers say, word for word ("…" marks a cut), each with the name to show. -->
@@ -137,50 +152,426 @@
   </section>
 </main>
 <footer class="legal-links">
+  <p class="credit">Made with care by <a href="https://x.com/_atilla1">Atilla</a></p>
   <a href="privacy/">Privacy Policy</a>
   <a href="legal/">Legal Notice</a>
 </footer>
 <script>
-  // The film streams from Mux. Safari plays the stream by itself; other browsers get hls.js, a small open-source
-  // player, and only the size the page shows. Some say they can play it themselves and then can't: hls.js then too.
-  // No viewer tracking either way.
-  const stream = "https://stream.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00.m3u8";
-  const video = document.getElementById("film");
-  if (video.canPlayType("application/vnd.apple.mpegurl")) {
-    video.addEventListener("error", playWithHls, { once: true });
-    video.src = stream;
-  } else {
-    playWithHls();
+  // The films stream from Mux. Safari plays a stream by itself; other browsers get hls.js, a small open-source player,
+  // and only the size the page shows. Some say they can play it themselves and then can't: hls.js then too. A film
+  // starts loading only once it's the big one. No viewer tracking either way.
+  let hlsLoad;
+  function loadHls() {
+    hlsLoad ??= new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.light.min.js";
+      script.integrity = "sha384-y8wQxRLtNclrHbMBLBLTEkgUrdFu6uWzZiobE1wBE09nt2wHIZlBPvPepdZU4+MM";
+      script.crossOrigin = "anonymous";
+      script.onload = () => resolve(window.Hls);
+      script.onerror = reject;
+      document.head.append(script);
+    });
+    return hlsLoad;
   }
-  function playWithHls() {
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/hls.js@1.7.3/dist/hls.light.min.js";
-    script.integrity = "sha384-y8wQxRLtNclrHbMBLBLTEkgUrdFu6uWzZiobE1wBE09nt2wHIZlBPvPepdZU4+MM";
-    script.crossOrigin = "anonymous";
-    script.onload = () => {
-      if (!window.Hls || !Hls.isSupported()) return;
+  function stream(video) {
+    if (video.dataset.streaming) return;
+    video.dataset.streaming = "1";
+    video.preload = "auto";
+    const source = `https://stream.mux.com/${video.closest(".film").dataset.playback}.m3u8`;
+    const withHls = () => loadHls().then((Hls) => {
+      if (!Hls || !Hls.isSupported()) return;
       const hls = new Hls({ capLevelToPlayerSize: true });
-      hls.loadSource(stream);
+      hls.loadSource(source);
       hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(() => {}));
-    };
-    document.head.append(script);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => { if (video.closest(".is-big")) video.play().catch(() => {}); });
+    }).catch(() => {});
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.addEventListener("error", withHls, { once: true });
+      video.src = source;
+    } else {
+      withHls();
+    }
   }
+  const firstFilm = document.querySelector(".film.is-big video");
+  stream(firstFilm);
+  firstFilm.play().catch(() => {});
 </script>
 <script type="module">
-  // Squircle corners, the continuous curve of iOS, from Lisse (corne.rs); redrawn whenever the film changes size.
-  import { generateClipPath, observeResize } from "https://cdn.jsdelivr.net/npm/@lisse/core@0.7.3/dist/index.js";
-  const video = document.getElementById("film");
-  const shape = () => {
-    const { width, height } = video.getBoundingClientRect();
-    if (!width || !height) return;
-    const radius = Math.round(Math.min(52, Math.max(32, width * 0.056)));
-    video.style.clipPath = generateClipPath(width, height, { radius, smoothing: 0.6 });
-    video.parentElement.style.borderRadius = `${radius}px`;
-    video.classList.add("squircle");
-  };
+  // Squircle corners, the continuous curve of iOS, from Lisse (corne.rs). The small film's corners are the big one's
+  // scaled with its width, and then a little rounder, so they still read as round at that size.
+  import { generateClipPath, generatePath, getLayoutSize, observeResize } from "https://cdn.jsdelivr.net/npm/@lisse/core@0.7.3/dist/index.js";
+  const films = [...document.querySelectorAll(".film")];
+  const container = document.querySelector(".films");
+  const motion = matchMedia("(prefers-reduced-motion: no-preference)");
+  const smallRounder = 1.6;
+
+  // Each film's corner radius for where it is now.
+  function radii() {
+    const big = document.querySelector(".film.is-big");
+    const bigRadius = Math.min(52, Math.max(32, big.offsetWidth * 0.056));
+    return new Map(films.map((film) => [film,
+      film === big ? bigRadius : bigRadius * film.offsetWidth / big.offsetWidth * smallRounder]));
+  }
+  function shape() {
+    for (const [film, radius] of radii()) {
+      const width = film.offsetWidth, height = film.offsetHeight;
+      if (!width || !height) continue;
+      const clip = film.querySelector(".film-clip");
+      clip.style.clipPath = generateClipPath(width, height, { radius, smoothing: 0.6 });
+      clip.classList.add("squircle");
+      film.style.borderRadius = `${radius}px`;
+    }
+  }
   shape();
-  observeResize(video, shape);
+  films.forEach((film) => observeResize(film, () => { if (!container.classList.contains("swapping")) shape(); }));
+
+  // A tap on the small film brings it to the middle, and the big one moves to the other side, like a carousel. Both
+  // travel on a small arc, the leaving one dipping, the coming one rising a moment later, and grow or shrink on a spring
+  // with a touch of bounce: they overshoot by about 1 %, then drift back into place, unhurried. Corners and shadows
+  // change with them, so the small film's rounder corners come and go gradually. The coming film starts at the tap, with sound, which fades in as it travels
+  // while the leaving film's fades out; its controls come once it has landed.
+  //
+  // The way there: a spring, x(t) = 1 − e^(−ζωt)·(cos ω_d t + ζ/√(1−ζ²)·sin ω_d t), damping ζ 0.82, a 0.42 s period,
+  // up to its one overshoot, about 1 % at 0.37 s. The spring alone would snap back from there in a tenth of a second
+  // and stop dead; instead the film lets go from that standstill as a critically damped spring does,
+  // 1 + a·(1 + ω₂τ)·e^(−ω₂τ), and drifts back over 0.4 s, ending exactly at rest.
+  const zeta = 0.82, omega = (2 * Math.PI) / 0.42, damped = omega * Math.sqrt(1 - zeta * zeta);
+  const springTo = (t) => 1 - Math.exp(-zeta * omega * t) *
+    (Math.cos(damped * t) + (zeta / Math.sqrt(1 - zeta * zeta)) * Math.sin(damped * t));
+  const peak = Math.PI / damped, overshoot = springTo(peak) - 1, settle = 0.4, letGo = 9.23 / settle;
+  const length = peak + settle;
+  const springAt = (t) => t <= peak ? springTo(t)
+    : 1 + overshoot * (1 + letGo * (t - peak)) * Math.exp(-letGo * (t - peak));
+  const spring = `linear(${Array.from({ length: 90 }, (_, i) => springAt((i / 90) * length).toFixed(4)).join(", ")}, 1)`;
+  const duration = Math.round(length * 1000), lag = 80, steps = 12;
+
+  // The path from one place to another (two rects) along a gentle curve: at t from 0 to 1, where the film is and how
+  // large, relative to the end. `rise` bends it up (the coming film) or down (the leaving one). On a phone, where the
+  // path runs up and down, it bends sideways instead: the leaving film to the right and the coming one to the left, or
+  // the other way round for `lean` −1, a swipe to the left.
+  function path(from, to, rise, lean = 1) {
+    const dx = from.left + from.width / 2 - (to.left + to.width / 2);
+    const dy = from.top + from.height / 2 - (to.top + to.height / 2);
+    const scale = from.width / to.width;
+    const distance = Math.hypot(dx, dy) || 1;
+    let nx = -dy / distance, ny = dx / distance;
+    if (Math.abs(ny) > 0.3) { if ((ny > 0) === rise) { nx = -nx; ny = -ny; } }
+    else if (((nx > 0) === rise) !== (lean < 0)) { nx = -nx; ny = -ny; }
+    const bend = Math.min(80, distance * 0.14);
+    const cx = dx / 2 + nx * bend, cy = dy / 2 + ny * bend;
+    return (t) => {
+      const u = 1 - t;
+      return { x: u * u * dx + 2 * u * t * cx, y: u * u * dy + 2 * u * t * cy, k: scale + (1 - scale) * t };
+    };
+  }
+  // A film's swap, from where it was to where it is now: the path as keyframes.
+  function arc(from, to, rise, lean) {
+    const at = path(from, to, rise, lean);
+    return Array.from({ length: steps + 1 }, (_, i) => {
+      const t = i / steps, { x, y, k } = at(t);
+      return { offset: t, transform: `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) scale(${k.toFixed(4)})` };
+    });
+  }
+
+  // The film's corners along the way: the radius it showed before, turning into the one it shows after, measured in its
+  // new size while the swap's scale shrinks or grows it.
+  function corners(film, from, toRadius, fromRadius) {
+    const width = film.offsetWidth, height = film.offsetHeight, scale = from.width / width;
+    return Array.from({ length: steps + 1 }, (_, i) => {
+      const t = i / steps, k = scale + (1 - scale) * t;
+      const shown = fromRadius + (toRadius - fromRadius) * t;
+      return { offset: t, radius: shown / k, clipPath: generateClipPath(width, height, { radius: shown / k, smoothing: 0.6 }) };
+    });
+  }
+  // Those corners on the picture, and on the shadow around it.
+  function round(film, from, toRadius, fromRadius, timing) {
+    const frames = corners(film, from, toRadius, fromRadius);
+    film.querySelector(".film-clip").animate(frames.map(({ offset, clipPath }) => ({ offset, clipPath })), timing);
+    film.animate(frames.map(({ offset, radius }) => ({ offset, borderRadius: `${radius.toFixed(2)}px` })), timing);
+  }
+
+  // Sound fades by volume. iPhone and iPad keep every video at full volume, so there a film's sound just starts, and
+  // the leaving film stops at once rather than play over the coming one.
+  const canFade = (() => { const probe = document.createElement("video"); probe.volume = 0.5; return probe.volume === 0.5; })();
+  const fades = new Map();
+  function fade(video, to, ms, done) {
+    cancelAnimationFrame(fades.get(video));
+    const from = video.volume, start = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / ms);
+      // Quadratic in both directions, which the ear hears as an even fade.
+      video.volume = to > from ? from + (to - from) * t * t : to + (from - to) * (1 - t) * (1 - t);
+      if (t < 1) fades.set(video, requestAnimationFrame(step));
+      else { fades.delete(video); done?.(); }
+    };
+    fades.set(video, requestAnimationFrame(step));
+  }
+
+  // A swipe hands over where it left the films: their corners then, which way it went, and no pause for the coming
+  // film, which is already on its way.
+  function swap(next, { shown, lean, delay = lag } = {}) {
+    const current = document.querySelector(".film.is-big");
+    if (next === current || !next.classList.contains("is-small")) return;
+    // Where each film is now, and its corners, also mid-swap or mid-swipe.
+    const before = new Map(films.map((film) => [film, film.getBoundingClientRect()]));
+    const radiusBefore = shown ?? radii();
+    films.forEach((film) => { film.style.translate = film.style.scale = film.style.transition = ""; });
+    films.forEach((film) => [film, film.querySelector(".film-clip")].forEach((el) =>
+      el.getAnimations().forEach((animation) => animation.cancel())));
+
+    container.classList.add("swapping");
+    const side = next.classList.contains("is-right") ? "is-right" : "is-left";
+    next.classList.remove("is-small", "is-left", "is-right");
+    next.classList.add("is-big");
+    current.classList.remove("is-big", "controls-on");
+    current.classList.add("is-small", side === "is-right" ? "is-left" : "is-right");
+    current.querySelector(".film-play").tabIndex = 0;
+    next.querySelector(".film-play").tabIndex = -1;
+
+    // The sound. The leaving film fades out and stops; the coming one starts now, while the tap still counts as one
+    // (browsers play sound only on a tap or click), unmuted, from silence up.
+    const gone = current.querySelector("video");
+    if (canFade && !gone.paused && !gone.muted && gone.volume > 0) {
+      fade(gone, 0, Math.round(duration * 0.6), () => { gone.pause(); gone.volume = 1; });
+    } else {
+      cancelAnimationFrame(fades.get(gone));
+      gone.pause();
+      if (canFade) gone.volume = 1;
+    }
+    const playing = next.querySelector("video");
+    stream(playing);
+    playing.muted = false;
+    if (canFade) { cancelAnimationFrame(fades.get(playing)); playing.volume = 0; fade(playing, 1, duration); }
+    // Where the browser still says no, the film plays without sound and the sound button turns it on.
+    playing.play().catch(() => { playing.muted = true; playing.play().catch(() => {}); });
+    shape();
+    const radiusAfter = radii();
+
+    const land = () => {
+      container.classList.remove("swapping");
+      showControls(next);
+      next.querySelector(".fc-play").focus({ preventScroll: true });
+    };
+    if (!motion.matches) { land(); return; }
+    const leaving = { duration, easing: spring };
+    const coming = { duration, delay, easing: spring, fill: "backwards" };
+    current.animate(arc(before.get(current), current.getBoundingClientRect(), false, lean), leaving);
+    round(current, before.get(current), radiusAfter.get(current), radiusBefore.get(current), leaving);
+    round(next, before.get(next), radiusAfter.get(next), radiusBefore.get(next), coming);
+    next.animate(arc(before.get(next), next.getBoundingClientRect(), true, lean), coming).onfinish = land;
+  }
+
+  // Swiping on a touch screen, iPhone and iPad. A sideways swipe across the films moves both along the swap's own
+  // path with the finger: the big one shrinking toward where it would go, the small one growing toward the middle. Let
+  // go past a third of the way, or with a flick, and the swap finishes from there, on the same spring; short of that,
+  // they spring back. On iPad, the swipe goes toward the big film's new place, away from the small one; on iPhone,
+  // where the small one sits underneath, either way, and the films lean the way the finger goes. Up and down is the
+  // page scrolling, as always.
+  const phone = matchMedia("(max-width: 720px)");
+  let swipe = null, swallowClick = false;
+  container.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" || swipe || container.classList.contains("swapping")) return;
+    if (event.target.closest(".film-controls")) return;
+    if (films.some((film) => film.getAnimations().length)) return;
+    swipe = { id: event.pointerId, x: event.clientX, y: event.clientY, live: false, moves: [] };
+  });
+  container.addEventListener("pointermove", (event) => {
+    if (!swipe || event.pointerId !== swipe.id) return;
+    const dx = event.clientX - swipe.x, dy = event.clientY - swipe.y;
+    if (!swipe.live) {
+      if (Math.hypot(dx, dy) < 10) return;
+      if (Math.abs(dy) >= Math.abs(dx)) { swipe = null; return; }
+      startSwipe(Math.sign(dx));
+      try { container.setPointerCapture(event.pointerId); } catch {}
+    }
+    swipe.moves.push({ x: event.clientX, time: event.timeStamp });
+    if (swipe.moves.length > 8) swipe.moves.shift();
+    // A third past either end, it gives only a little: a rubber band.
+    const raw = (dx * swipe.dir) / swipe.span;
+    swipe.t = raw < 0 ? Math.max(-0.04, raw * 0.2) : raw > 1 ? 1 + Math.min(0.06, (raw - 1) * 0.2) : raw;
+    cancelAnimationFrame(swipe.frame);
+    const state = swipe, t = swipe.t;
+    swipe.frame = requestAnimationFrame(() => followSwipe(state, t));
+  });
+  container.addEventListener("pointerup", (event) => endSwipe(event, false));
+  container.addEventListener("pointercancel", (event) => endSwipe(event, true));
+  // The tap that ends a swipe isn't a tap on what's under it.
+  container.addEventListener("click", (event) => {
+    if (swallowClick) { event.stopPropagation(); event.preventDefault(); }
+  }, true);
+
+  function startSwipe(sign) {
+    const big = container.querySelector(".film.is-big"), small = container.querySelector(".film.is-small");
+    const bigRect = big.getBoundingClientRect(), smallRect = small.getBoundingClientRect();
+    const dir = phone.matches ? sign : small.classList.contains("is-right") ? -1 : 1;
+    const lean = phone.matches ? sign : undefined;
+    // Where the big film goes: under it on a phone, where the small one is; otherwise the other side.
+    const bigTo = phone.matches ? smallRect : new DOMRect(
+      2 * (bigRect.left + bigRect.width / 2) - (smallRect.left + smallRect.width / 2) - smallRect.width / 2,
+      smallRect.top, smallRect.width, smallRect.height);
+    const now = radii();
+    Object.assign(swipe, {
+      live: true, small, dir, lean, t: 0, shown: new Map(now),
+      span: phone.matches ? bigRect.width * 0.7 : Math.abs(bigTo.left + bigTo.width / 2 - (bigRect.left + bigRect.width / 2)),
+      parts: [
+        { film: big, at: path(bigRect, bigTo, false, lean), from: now.get(big), to: now.get(small) },
+        { film: small, at: path(smallRect, bigRect, true, lean), from: now.get(small), to: now.get(big) },
+      ],
+    });
+    big.classList.remove("controls-on");
+    stream(small.querySelector("video"));
+  }
+
+  function followSwipe(state, t) {
+    if (!motion.matches) return;
+    for (const { film, at, from, to } of state.parts) {
+      const start = at(0), here = at(t), k = here.k / start.k;
+      film.style.transition = "none";
+      film.style.translate = `${(here.x - start.x).toFixed(2)}px ${(here.y - start.y).toFixed(2)}px`;
+      film.style.scale = k.toFixed(4);
+      const shown = from + (to - from) * Math.min(1, Math.max(0, t));
+      film.querySelector(".film-clip").style.clipPath =
+        generateClipPath(film.offsetWidth, film.offsetHeight, { radius: shown / k, smoothing: 0.6 });
+      film.style.borderRadius = `${(shown / k).toFixed(2)}px`;
+      state.shown.set(film, shown);
+    }
+  }
+
+  function endSwipe(event, cancelled) {
+    if (!swipe || event.pointerId !== swipe.id) return;
+    const done = swipe;
+    swipe = null;
+    if (!done.live) return;
+    swallowClick = true;
+    setTimeout(() => { swallowClick = false; }, 400);
+    cancelAnimationFrame(done.frame);
+    followSwipe(done, done.t);
+    // How fast the finger went, toward the swap, over its last tenth of a second.
+    const last = done.moves.at(-1), first = done.moves.find((move) => last.time - move.time < 100) ?? last;
+    const speed = last.time > first.time ? ((last.x - first.x) * done.dir) / (last.time - first.time) : 0;
+    if (!cancelled && (done.t > 0.33 || (speed > 0.35 && done.t > 0.04))) {
+      swap(done.small, { shown: done.shown, lean: done.lean, delay: 0 });
+      return;
+    }
+    // Back to where they were, on the same spring.
+    shape();
+    for (const { film, from } of done.parts) {
+      const translate = film.style.translate || "0px 0px", scale = film.style.scale || "1";
+      film.style.translate = film.style.scale = film.style.transition = "";
+      if (!motion.matches) continue;
+      film.animate([{ translate, scale }, { translate: "0px 0px", scale: "1" }], { duration, easing: spring });
+      round(film, { width: film.offsetWidth * Number(scale) }, from, done.shown.get(film), { duration, easing: spring });
+    }
+  }
+
+  for (const film of films) {
+    const play = film.querySelector(".film-play");
+    play.addEventListener("click", () => swap(film));
+    // Pointing at the small film, or reaching it with the keyboard, starts loading it, so it's ready by the tap.
+    const warm = () => { if (film.classList.contains("is-small")) stream(film.querySelector("video")); };
+    film.addEventListener("pointerenter", warm);
+    play.addEventListener("focus", warm);
+  }
+
+  // Sailmode's own controls, on each film; only the big film's show.
+  const icons = {
+    play: '<path d="M8 5.6v12.8c0 .9 1 1.4 1.7.9l9.4-6.4c.6-.4.6-1.4 0-1.8L9.7 4.7C9 4.2 8 4.7 8 5.6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
+    pause: '<rect x="6.5" y="5" width="4" height="14" rx="1.6" fill="currentColor"/><rect x="13.5" y="5" width="4" height="14" rx="1.6" fill="currentColor"/>',
+    muted: '<path d="M4 9.5h3l4.5-4v13L7 14.5H4z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M15.5 9.5l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    sound: '<path d="M4 9.5h3l4.5-4v13L7 14.5H4z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M15 9a4.2 4.2 0 0 1 0 6M17.6 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+    full: '<path d="M13.8 10.2l5.7-5.7M13.5 4.5h6v6M10.2 13.8l-5.7 5.7M10.5 19.5h-6v-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  };
+  const svg = (name) => `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name]}</svg>`;
+  const clock = (s) => Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00";
+  const hideTimers = new Map();
+
+  function showControls(film, hold = 2200) {
+    // Only on the big film, and not mid-swap or mid-swipe: the coming film gets them once it has landed.
+    if (!film.classList.contains("is-big") || container.classList.contains("swapping") || swipe?.live) return;
+    film.classList.add("controls-on");
+    clearTimeout(hideTimers.get(film));
+    const video = film.querySelector("video");
+    hideTimers.set(film, setTimeout(() => {
+      // Paused, being dragged or used from the keyboard: they stay.
+      if (video.paused || film.querySelector(".film-controls").matches(":focus-within, :active")) return;
+      film.classList.remove("controls-on");
+    }, hold));
+  }
+
+  for (const film of films) {
+    const video = film.querySelector("video");
+    const bar = document.createElement("div");
+    bar.className = "film-controls";
+    bar.setAttribute("role", "group");
+    bar.setAttribute("aria-label", "Video controls");
+    bar.innerHTML = `<button class="fc-play" type="button"></button>
+      <input class="fc-seek" type="range" min="0" max="1000" step="1" value="0" aria-label="Position">
+      <span class="fc-time" aria-hidden="true">0:00</span>
+      <button class="fc-sound" type="button"></button>
+      <button class="fc-full" type="button" aria-label="Full screen">${svg("full")}</button>`;
+    film.querySelector(".film-clip").insertBefore(bar, film.querySelector(".film-play"));
+    // The bar is a capsule with the films' squircle curve, its faint white edge drawn along that same curve.
+    observeResize(bar, () => {
+      const { width, height } = getLayoutSize(bar);
+      if (!width || !height) return;
+      const curve = { radius: height / 2, smoothing: 0.6 };
+      bar.style.clipPath = generateClipPath(width, height, curve);
+      const edge = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><path d="${generatePath(width, height, curve)}" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="2"/></svg>`;
+      bar.style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(edge)}")`;
+    });
+    const playButton = bar.querySelector(".fc-play"), seek = bar.querySelector(".fc-seek");
+    const time = bar.querySelector(".fc-time"), sound = bar.querySelector(".fc-sound");
+    let seeking = false;
+
+    const paint = () => {
+      playButton.innerHTML = svg(video.paused ? "play" : "pause");
+      playButton.setAttribute("aria-label", video.paused ? "Play" : "Pause");
+      sound.innerHTML = svg(video.muted ? "muted" : "sound");
+      sound.setAttribute("aria-label", video.muted ? "Turn Sound On" : "Turn Sound Off");
+    };
+    const progress = () => {
+      const share = video.duration ? video.currentTime / video.duration : 0;
+      if (!seeking) seek.value = Math.round(share * 1000);
+      seek.style.setProperty("--played", `${(seek.value / 10).toFixed(1)}%`);
+      time.textContent = `${clock(video.currentTime)} / ${clock(video.duration)}`;
+    };
+    paint();
+    ["play", "pause"].forEach((type) => video.addEventListener(type, () => { paint(); showControls(film); }));
+    // Sound turned on or off; a fade's volume steps change nothing here.
+    let wasMuted = video.muted;
+    video.addEventListener("volumechange", () => {
+      if (video.muted === wasMuted) return;
+      wasMuted = video.muted;
+      paint();
+      showControls(film);
+    });
+    ["timeupdate", "durationchange", "loadedmetadata"].forEach((type) => video.addEventListener(type, progress));
+
+    playButton.addEventListener("click", () => { video.paused ? video.play().catch(() => {}) : video.pause(); });
+    sound.addEventListener("click", () => { video.muted = !video.muted; });
+    bar.querySelector(".fc-full").addEventListener("click", () => {
+      if (video.requestFullscreen) video.requestFullscreen().catch(() => {});
+      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+    });
+    seek.addEventListener("input", () => {
+      seeking = true;
+      if (video.duration) video.currentTime = (seek.value / 1000) * video.duration;
+      progress();
+    });
+    seek.addEventListener("change", () => { seeking = false; });
+
+    // The pointer on the big film shows them; a click on the picture plays or pauses, and a first tap on a touch
+    // screen only shows them.
+    film.addEventListener("pointermove", () => showControls(film));
+    film.addEventListener("pointerleave", () => showControls(film, 600));
+    film.addEventListener("focusin", () => showControls(film));
+    video.addEventListener("pointerup", (event) => {
+      if (!film.classList.contains("is-big")) return;
+      if (event.pointerType === "touch" && !film.classList.contains("controls-on")) { showControls(film); return; }
+      video.paused ? video.play().catch(() => {}) : video.pause();
+    });
+  }
+  showControls(document.querySelector(".film.is-big"));
 </script>
 <script src="site.js?v=4aadfd3f52"></script>
 <!-- Cloudflare Web Analytics: counts visits, without cookies. --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "142a9ddf4b6b43f39f963246700cc026"}'></script>
