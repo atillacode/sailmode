@@ -134,7 +134,8 @@ body::before {
 .film.is-small.is-left { grid-row: 1; grid-column: 1; }
 .film.is-small.is-right { grid-row: 1; grid-column: 3; }
 @media (max-width: 720px) {
-  .films { grid-template-columns: minmax(0, 1fr); }
+  /* Stacked, the small film sits twice as far below the big one as the films sit apart side by side. */
+  .films { grid-template-columns: minmax(0, 1fr); row-gap: 32px; }
   .film.is-big { grid-column: 1; }
   .film.is-small.is-left, .film.is-small.is-right { grid-row: 2; grid-column: 1; justify-self: center; width: 46%; }
 }
