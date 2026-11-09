@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=675e17e8ee">
+<link rel="stylesheet" href="style.css?v=a29824c028">
 </head>
 <body>
 <main class="hero">
@@ -205,6 +205,7 @@
   const films = [...document.querySelectorAll(".film")];
   const container = document.querySelector(".films");
   const caption = container.querySelector(".film-caption");
+  let captionTimer;
   const motion = matchMedia("(prefers-reduced-motion: no-preference)");
   const smallRounder = 1.6;
 
@@ -335,7 +336,14 @@
       el.getAnimations().forEach((animation) => animation.cancel())));
 
     container.classList.add("swapping");
+    // The caption fades out at the tap and comes back with the new film's name while the film is still on its way,
+    // so it's there before the film settles.
     caption.classList.add("is-changing");
+    clearTimeout(captionTimer);
+    captionTimer = setTimeout(() => {
+      caption.textContent = next.dataset.caption;
+      caption.classList.remove("is-changing");
+    }, motion.matches ? 200 : 0);
     const side = next.classList.contains("is-right") ? "is-right" : "is-left";
     next.classList.remove("is-small", "is-left", "is-right");
     next.classList.add("is-big");
@@ -369,8 +377,6 @@
 
     const land = () => {
       container.classList.remove("swapping");
-      caption.textContent = next.dataset.caption;
-      caption.classList.remove("is-changing");
       // Landed and still not playing: the loading circle, if it doesn't start in a moment.
       expect(next, 250);
       showControls(next);
