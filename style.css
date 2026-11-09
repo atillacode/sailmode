@@ -114,6 +114,7 @@ body::before {
 .hero .sub span { display: block; }
 .hero .soon { margin: 28px 0 0; font-size: 15px; line-height: 1.4; color: var(--quiet); }
 .hero .soon span { display: block; }
+.hero .soon span + span { margin-top: 4px; }
 .hero .soon a { color: var(--accent); font-weight: 500; }
 /* The films: the big one playing in the middle of the page, the other small beside it, dimmed, with a white play
    button: first on the right, and after a swap on the side the big one leaves to. On a phone the small one sits
@@ -125,8 +126,10 @@ body::before {
   width: min(1400px, 100%); margin-top: 40px;
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 4.4fr) minmax(0, 1fr); align-items: center;
   gap: clamp(16px, 2vw, 24px);
-  /* Sideways swipes are the films' own (index.html); up and down still scrolls, and pinching still zooms. */
+  /* Sideways swipes are the films' own (index.html); up and down still scrolls, and pinching still zooms. No grey
+     flash on iPhone and iPad when a film is touched: the films answer a touch themselves. */
   touch-action: pan-y pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
 }
 /* Ready to move: each film on a layer of its own before a swap starts, so the first frame doesn't stall. */
 .film { position: relative; margin: 0; border-radius: 44px; box-shadow: 0 6px 18px var(--shade); will-change: transform; }
