@@ -74,13 +74,13 @@ body::before {
 .legal-links .credit { flex-basis: 100%; margin: 0 0 8px; text-align: center; font-size: 13px; }
 .legal-links .credit a { opacity: 1; color: var(--accent); font-weight: 500; }
 
-/* The other links: the accent colour, and pointed at, a 2-point line under them with round ends, a little further
+/* The other links: the accent colour, and pointed at, a 1.5-point line under them with round ends, further
    below the letters than a plain underline, clear of g, p and y. It's drawn as the link's background, a bar with a
    dot at each end, so a link that wraps gets it on every line, and it fades in over a tenth of a second: its colour
    is a registered property, which the browser can fade where a background alone it can't. */
 @property --underline { syntax: "<color>"; inherits: false; initial-value: transparent; }
 .hero .soon a, .faq a, .doc a, .legal-links .credit a {
-  text-decoration: none; padding-bottom: 2px;
+  text-decoration: none; padding-bottom: 4px;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
   background-image:
     radial-gradient(circle closest-side, var(--underline) 92%, transparent),
@@ -88,7 +88,7 @@ body::before {
     linear-gradient(var(--underline), var(--underline));
   background-repeat: no-repeat;
   background-position: left bottom, right bottom, center bottom;
-  background-size: 2px 2px, 2px 2px, calc(100% - 2px) 2px;
+  background-size: 1.5px 1.5px, 1.5px 1.5px, calc(100% - 1.5px) 1.5px;
   transition: --underline 0.1s ease;
 }
 :is(.hero .soon a, .faq a, .doc a, .legal-links .credit a):is(:hover, :focus-visible) { --underline: var(--accent); }
@@ -140,20 +140,46 @@ body::before {
   /* Stacked, the small film sits twice as far below the big one as the films sit apart side by side. */
   .films { grid-template-columns: minmax(0, 1fr); row-gap: 32px; }
   .film.is-big { grid-column: 1; }
-  .film.is-small.is-left, .film.is-small.is-right { grid-row: 2; grid-column: 1; justify-self: center; width: 46%; }
+  .film.is-small.is-left, .film.is-small.is-right { grid-row: 3; grid-column: 1; justify-self: center; width: 46%; }
+  .films .film-caption { grid-column: 1; margin-top: -16px; }
 }
 .film-clip { position: relative; overflow: hidden; border-radius: inherit; }
+/* Which build the big film shows, quietly, under it. It fades out as a swap starts and back in with the new name as
+   the new film lands. */
+.film-caption {
+  grid-row: 2; grid-column: 2; margin: -8px 0 0; text-align: center;
+  font-size: 15px; font-weight: 600; color: var(--quiet);
+  transition: opacity 0.3s ease;
+}
+.film-caption.is-changing { opacity: 0; transition-duration: 0.15s; }
 .film-clip.squircle { border-radius: 0; }
 .film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; background: #000; }
 /* Over the small film: half black, and a very light grey play button that turns white while pointed at. */
 .film-play {
   position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 0; border: 0;
   background: rgba(0, 0, 0, 0.5); color: #d6d6d6; cursor: pointer;
-  opacity: 0; pointer-events: none; transition: opacity 0.25s ease, color 0.25s ease;
+  opacity: 0; pointer-events: none; transition: opacity 0.35s ease, color 0.25s ease;
 }
 .film.is-small:hover .film-play, .film-play:focus-visible { color: #fff; }
 .film.is-small .film-play { opacity: 1; pointer-events: auto; }
-.film-play svg { width: clamp(28px, 3.4vw, 40px); height: auto; filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.35)); }
+.film-play svg {
+  width: clamp(28px, 3.4vw, 40px); height: auto; filter: drop-shadow(0 1px 6px rgba(0, 0, 0, 0.35));
+  transition: opacity 0.2s ease;
+}
+/* A film on its way to the middle keeps its dimming, its play button gone, until it really plays; then the dimming
+   lifts. On a fast connection that's as it lands; on a slow one it waits, with the loading circle. */
+.film.is-waking .film-play { opacity: 1; }
+.film.is-waking .film-play svg { opacity: 0; }
+/* The loading circle: white, a quarter of it bright, turning, in the middle of the big film. */
+.film-wait {
+  position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px;
+  border: 2.5px solid rgba(255, 255, 255, 0.28); border-top-color: #fff; border-radius: 50%;
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.35));
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+  animation: film-wait 0.9s linear infinite paused;
+}
+.film.is-loading .film-wait { opacity: 1; animation-play-state: running; }
+@keyframes film-wait { to { rotate: 360deg; } }
 .film-play:focus-visible { outline: 3px solid #fff; outline-offset: -6px; }
 /* Pointing at the small film draws it 20 points toward the middle, a touch larger, its play button a touch larger
    still, and the big one steps back to 99 %
@@ -165,7 +191,7 @@ body::before {
   .film.is-small.is-left:hover { translate: 20px 0; scale: 1.04; }
   .films:has(.film.is-small.is-right:hover) .film.is-big { translate: -20px 0; scale: 0.99; }
   .films:has(.film.is-small.is-left:hover) .film.is-big { translate: 20px 0; scale: 0.99; }
-  .film-play svg { transition: scale 0.42s var(--spring, ease-out); }
+  .film-play svg { transition: scale 0.42s var(--spring, ease-out), opacity 0.2s ease; }
   .film.is-small:hover .film-play svg { scale: 1.08; }
 }
 .films.swapping .film { translate: none !important; scale: none !important; transition: none !important; }

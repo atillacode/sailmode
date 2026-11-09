@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=26d9ac1849">
+<link rel="stylesheet" href="style.css?v=7da5f94662">
 </head>
 <body>
 <main class="hero">
@@ -31,25 +31,27 @@
   <h1>Sailmode for iPhone Duo.</h1>
   <p class="sub"><span>The most delightful way to see and control</span> <span>your Mac from your iPhone or iPad.</span></p>
   <p class="soon"><span>Coming soon.</span> <span>Follow <a href="https://x.com/sailmode">@sailmode</a> for more.</span></p>
-  <!-- Two films: the big one plays in the middle, the small one waits on the right, dimmed with a play button. Tapping
-       the small one brings it to the middle and the big one to the other side (the script at the end of the page). -->
+  <!-- A film of every build sent to testers, the newest playing big in the middle, the earlier one small on its left,
+       dimmed with a play button, and the build's name under the big one. Tapping the small one brings it to the
+       middle and the big one to the other side (the script at the end of the page). -->
   <div class="films">
-    <figure class="film is-big" data-playback="DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00">
+    <figure class="film is-big" data-playback="bZB500qhsIg7VI1GqZ66I3Cz8u00FQC6l1KU4ecXuTISs" data-caption="Build 2">
       <div class="film-clip">
         <video muted loop playsinline preload="auto"
-               poster="https://image.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00/thumbnail.webp?time=0&amp;width=1920"
-               aria-label="Sailmode on iPhone Duo"></video>
-        <button class="film-play" type="button" aria-label="Play “Sailmode on iPhone Duo”" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .9 1 1.4 1.7.9l9.4-6.4c.6-.4.6-1.4 0-1.8L9.7 4.7C9 4.2 8 4.7 8 5.6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+               poster="https://image.mux.com/bZB500qhsIg7VI1GqZ66I3Cz8u00FQC6l1KU4ecXuTISs/thumbnail.webp?time=0&amp;width=1920"
+               aria-label="Sailmode, build 2"></video>
+        <button class="film-play" type="button" aria-label="Play “Build 2”" tabindex="-1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .9 1 1.4 1.7.9l9.4-6.4c.6-.4.6-1.4 0-1.8L9.7 4.7C9 4.2 8 4.7 8 5.6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
       </div>
     </figure>
-    <figure class="film is-small is-right" data-playback="bZB500qhsIg7VI1GqZ66I3Cz8u00FQC6l1KU4ecXuTISs">
+    <figure class="film is-small is-left" data-playback="DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00" data-caption="Build 1">
       <div class="film-clip">
         <video muted loop playsinline preload="none"
-               poster="https://image.mux.com/bZB500qhsIg7VI1GqZ66I3Cz8u00FQC6l1KU4ecXuTISs/thumbnail.webp?time=0&amp;width=1920"
-               aria-label="The new Sailmode build"></video>
-        <button class="film-play" type="button" aria-label="Play “The new Sailmode build”"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .9 1 1.4 1.7.9l9.4-6.4c.6-.4.6-1.4 0-1.8L9.7 4.7C9 4.2 8 4.7 8 5.6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
+               poster="https://image.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00/thumbnail.webp?time=0&amp;width=1920"
+               aria-label="Sailmode, build 1"></video>
+        <button class="film-play" type="button" aria-label="Play “Build 1”"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8c0 .9 1 1.4 1.7.9l9.4-6.4c.6-.4.6-1.4 0-1.8L9.7 4.7C9 4.2 8 4.7 8 5.6z" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg></button>
       </div>
     </figure>
+    <p class="film-caption">Build 2</p>
   </div>
 
   <!-- What testers say, word for word ("…" marks a cut), each with the name to show. -->
@@ -202,6 +204,7 @@
   import { generateClipPath, generatePath, getLayoutSize, observeResize } from "https://cdn.jsdelivr.net/npm/@lisse/core@0.7.3/dist/index.js";
   const films = [...document.querySelectorAll(".film")];
   const container = document.querySelector(".films");
+  const caption = container.querySelector(".film-caption");
   const motion = matchMedia("(prefers-reduced-motion: no-preference)");
   const smallRounder = 1.6;
 
@@ -332,6 +335,7 @@
       el.getAnimations().forEach((animation) => animation.cancel())));
 
     container.classList.add("swapping");
+    caption.classList.add("is-changing");
     const side = next.classList.contains("is-right") ? "is-right" : "is-left";
     next.classList.remove("is-small", "is-left", "is-right");
     next.classList.add("is-big");
@@ -339,9 +343,13 @@
     current.classList.add("is-small", side === "is-right" ? "is-left" : "is-right");
     current.querySelector(".film-play").tabIndex = 0;
     next.querySelector(".film-play").tabIndex = -1;
+    // The coming film keeps its dimming, its play button gone, until it really plays (see wake below).
+    current.classList.remove("is-waking", "is-loading");
+    clearTimeout(waits.get(current));
+    next.classList.add("is-waking");
 
     // The sound. The leaving film fades out and stops; the coming one starts now, while the tap still counts as one
-    // (browsers play sound only on a tap or click), unmuted, from silence up.
+    // (browsers play sound only on a tap or click), unmuted and silent, and fades up once it plays.
     const gone = current.querySelector("video");
     if (canFade && !gone.paused && !gone.muted && gone.volume > 0) {
       fade(gone, 0, Math.round(duration * 0.6), () => { gone.pause(); gone.volume = 1; });
@@ -353,7 +361,7 @@
     const playing = next.querySelector("video");
     stream(playing);
     playing.muted = false;
-    if (canFade) { cancelAnimationFrame(fades.get(playing)); playing.volume = 0; fade(playing, 1, duration); }
+    if (canFade) { cancelAnimationFrame(fades.get(playing)); playing.volume = 0; }
     // Where the browser still says no, the film plays without sound and the sound button turns it on.
     playing.play().catch(() => { playing.muted = true; playing.play().catch(() => {}); });
     shape();
@@ -361,6 +369,10 @@
 
     const land = () => {
       container.classList.remove("swapping");
+      caption.textContent = next.dataset.caption;
+      caption.classList.remove("is-changing");
+      // Landed and still not playing: the loading circle, if it doesn't start in a moment.
+      expect(next, 250);
       showControls(next);
       next.querySelector(".fc-play").focus({ preventScroll: true });
     };
@@ -505,6 +517,17 @@
   const clock = (s) => Number.isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00";
   const hideTimers = new Map();
 
+  // A small turning circle in the middle of the big film while it should be playing and isn't yet: shown only after
+  // `after` milliseconds, so a quick start never flashes it.
+  const waits = new Map();
+  function expect(film, after) {
+    clearTimeout(waits.get(film));
+    waits.set(film, setTimeout(() => {
+      const video = film.querySelector("video");
+      if (film.classList.contains("is-big") && !video.paused && video.readyState < 3) film.classList.add("is-loading");
+    }, after));
+  }
+
   function showControls(film, hold = 2200) {
     // Only on the big film, and not mid-swap or mid-swipe: the coming film gets them once it has landed.
     if (!film.classList.contains("is-big") || container.classList.contains("swapping") || swipe?.live) return;
@@ -530,6 +553,10 @@
       <button class="fc-sound" type="button"></button>
       <button class="fc-full" type="button" aria-label="Full screen">${svg("full")}</button>`;
     film.querySelector(".film-clip").insertBefore(bar, film.querySelector(".film-play"));
+    const circle = document.createElement("span");
+    circle.className = "film-wait";
+    circle.setAttribute("aria-hidden", "true");
+    film.querySelector(".film-clip").append(circle);
     // The bar is a capsule with the films' squircle curve, its faint white edge (10 %) drawn along that same curve.
     observeResize(bar, () => {
       const { width, height } = getLayoutSize(bar);
@@ -557,6 +584,26 @@
     };
     paint();
     ["play", "pause"].forEach((type) => video.addEventListener(type, () => { paint(); showControls(film); }));
+    // Playing for real, from the first frame on screen: the dimming of a film that just came to the middle lifts and
+    // its sound fades up, and any loading circle goes.
+    video.addEventListener("playing", () => {
+      let woken = false;
+      const wake = () => {
+        if (woken) return;
+        woken = true;
+        clearTimeout(waits.get(film));
+        film.classList.remove("is-loading");
+        if (!film.classList.contains("is-waking") || !film.classList.contains("is-big")) return;
+        film.classList.remove("is-waking");
+        if (canFade && !video.muted) fade(video, 1, duration);
+      };
+      // The first frame on screen, or a quarter of a second, whichever comes first: a tab in the background draws no
+      // frames, and the dimming mustn't wait for one.
+      if (video.requestVideoFrameCallback) { video.requestVideoFrameCallback(wake); setTimeout(wake, 250); } else wake();
+    });
+    // Stuck waiting for the stream mid-film: the circle, if it lasts.
+    video.addEventListener("waiting", () => expect(film, 500));
+    video.addEventListener("pause", () => { clearTimeout(waits.get(film)); film.classList.remove("is-loading"); });
     // Sound turned on or off; a fade's volume steps change nothing here.
     let wasMuted = video.muted;
     video.addEventListener("volumechange", () => {
@@ -592,6 +639,8 @@
     });
   }
   showControls(document.querySelector(".film.is-big"));
+  // The first film, on a slow connection: the circle until it plays.
+  expect(document.querySelector(".film.is-big"), 800);
 </script>
 <script src="site.js?v=4aadfd3f52"></script>
 <!-- Cloudflare Web Analytics: counts visits, without cookies. --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "142a9ddf4b6b43f39f963246700cc026"}'></script>
