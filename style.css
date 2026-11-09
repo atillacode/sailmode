@@ -167,8 +167,10 @@ body::before {
   transition: opacity 0.2s ease;
 }
 /* A film on its way to the middle keeps its dimming, its play button gone, until it really plays; then the dimming
-   lifts. On a fast connection that's as it lands; on a slow one it waits, with the loading circle. */
+   lifts, slowly, over a second. On a fast connection that's as it lands; on a slow one it waits, with the loading
+   circle. */
 .film.is-waking .film-play { opacity: 1; }
+.film.is-big .film-play { transition: opacity 1s ease, color 0.25s ease; }
 .film.is-waking .film-play svg { opacity: 0; }
 /* The loading circle: white, a quarter of it bright, turning, in the middle of the big film. */
 .film-wait {

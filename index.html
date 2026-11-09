@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=7da5f94662">
+<link rel="stylesheet" href="style.css?v=675e17e8ee">
 </head>
 <body>
 <main class="hero">
@@ -543,6 +543,9 @@
 
   for (const film of films) {
     const video = film.querySelector("video");
+    // The still stays behind the picture: browsers drop a video's still as soon as they know its size, before its
+    // first frame is ready, and show black in between. Its own first frame then simply replaces it.
+    video.style.background = `#000 url("${video.poster}") center / cover no-repeat`;
     const bar = document.createElement("div");
     bar.className = "film-controls";
     bar.setAttribute("role", "group");
