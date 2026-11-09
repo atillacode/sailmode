@@ -187,7 +187,9 @@
       hls.attachMedia(video);
       hls.on(Hls.Events.MANIFEST_PARSED, () => { if (video.closest(".is-big")) video.play().catch(() => {}); });
     }).catch(() => {});
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    // Safari (on a Mac, iPhone or iPad) plays the stream itself. Others say they can, too, and then can't, so they get
+    // hls.js straight away, rather than half a second later.
+    if (video.canPlayType("application/vnd.apple.mpegurl") && /Apple/.test(navigator.vendor)) {
       video.addEventListener("error", withHls, { once: true });
       video.src = source;
     } else {
@@ -309,18 +311,30 @@
   // Sound fades by volume. iPhone and iPad keep every video at full volume, so there a film's sound just starts, and
   // the leaving film stops at once rather than play over the coming one.
   const canFade = (() => { const probe = document.createElement("video"); probe.volume = 0.5; return probe.volume === 0.5; })();
+  // A fade steps with the screen's frames and, as a page without frames (in the background, say) would leave it
+  // half done, also finishes on a timer: the leaving film always stops, and the coming one always ends at full.
   const fades = new Map();
+  function stopFade(video) {
+    const running = fades.get(video);
+    if (!running) return;
+    cancelAnimationFrame(running.frame);
+    clearTimeout(running.timer);
+    fades.delete(video);
+  }
   function fade(video, to, ms, done) {
-    cancelAnimationFrame(fades.get(video));
-    const from = video.volume, start = performance.now();
+    stopFade(video);
+    const from = video.volume, start = performance.now(), running = {};
+    const finish = () => { stopFade(video); video.volume = to; done?.(); };
     const step = (now) => {
       const t = Math.min(1, (now - start) / ms);
+      if (t >= 1) { finish(); return; }
       // Quadratic in both directions, which the ear hears as an even fade.
       video.volume = to > from ? from + (to - from) * t * t : to + (from - to) * (1 - t) * (1 - t);
-      if (t < 1) fades.set(video, requestAnimationFrame(step));
-      else { fades.delete(video); done?.(); }
+      running.frame = requestAnimationFrame(step);
     };
-    fades.set(video, requestAnimationFrame(step));
+    running.frame = requestAnimationFrame(step);
+    running.timer = setTimeout(finish, ms + 100);
+    fades.set(video, running);
   }
 
   // A swipe hands over where it left the films: their corners then, which way it went, and no pause for the coming
@@ -362,21 +376,29 @@
     if (canFade && !gone.paused && !gone.muted && gone.volume > 0) {
       fade(gone, 0, Math.round(duration * 0.6), () => { gone.pause(); gone.volume = 1; });
     } else {
-      cancelAnimationFrame(fades.get(gone));
+      stopFade(gone);
       gone.pause();
       if (canFade) gone.volume = 1;
     }
     const playing = next.querySelector("video");
     stream(playing);
     playing.muted = false;
-    if (canFade) { cancelAnimationFrame(fades.get(playing)); playing.volume = 0; }
+    if (canFade) { stopFade(playing); playing.volume = 0; }
     // Where the browser still says no, the film plays without sound and the sound button turns it on; where it won't
     // play at all, it stays paused, undimmed. A film that was still playing, on its way out, is woken by its play()
     // too, as it sends no "playing" again.
-    playing.play().then(() => wakeSoon(next)).catch(() => {
+    const start = () => playing.play().then(() => wakeSoon(next)).catch((error) => {
+      if (!next.classList.contains("is-big")) return;
+      // Not refused, only not ready (the stream still attaching, or handed over to hls.js): once it can play, again,
+      // with sound.
+      if (error.name !== "NotAllowedError") {
+        playing.addEventListener("canplay", () => { if (next.classList.contains("is-big") && playing.paused) start(); }, { once: true });
+        return;
+      }
       playing.muted = true;
       playing.play().then(() => wakeSoon(next)).catch(() => wake(next));
     });
+    start();
     shape();
     const radiusAfter = radii();
 
@@ -549,7 +571,7 @@
     film.classList.remove("is-waking");
     const video = film.querySelector("video");
     if (!canFade || video.muted) return;
-    cancelAnimationFrame(fades.get(video));
+    stopFade(video);
     if (video.paused) video.volume = 1; else fade(video, 1, duration);
   }
   // Playing: wake with its first frame on screen, or after a quarter of a second, whichever comes first (a tab in the
@@ -622,7 +644,17 @@
     ["play", "pause"].forEach((type) => video.addEventListener(type, () => { paint(); showControls(film); }));
     // Playing for real, from the first frame on screen: the dimming of a film that just came to the middle lifts and
     // its sound fades up, and any loading circle goes.
-    video.addEventListener("playing", () => wakeSoon(film));
+    video.addEventListener("playing", () => {
+      // Only the big film plays. A small one that starts anyway (a late play() from a swap since undone, a stream that
+      // just got ready) stops at once; the leaving one, fading out, stops when its fade ends.
+      if (film.classList.contains("is-small")) { if (!fades.has(video)) video.pause(); return; }
+      wakeSoon(film);
+    });
+    // Its time moving is playing too, whatever was or wasn't announced: the dimming lifts.
+    video.addEventListener("timeupdate", () => {
+      if (film.classList.contains("is-waking") && !video.paused && video.currentTime > 0.1) wake(film);
+      if (film.classList.contains("is-small") && !video.paused && !fades.has(video)) video.pause();
+    });
     // Stuck waiting for the stream mid-film: the circle, if it lasts.
     video.addEventListener("waiting", () => expect(film, 500));
     // Paused, also before it ever played: no dimming and no circle on the big film, and its sound ready at full.
