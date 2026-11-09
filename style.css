@@ -76,22 +76,27 @@ body::before {
 
 /* The other links: the accent colour, and pointed at, a 1.5-point line under them with round ends, further
    below the letters than a plain underline, clear of g, p and y. It's drawn as the link's background, a bar with a
-   dot at each end, so a link that wraps gets it on every line, and it fades in over a tenth of a second: its colour
-   is a registered property, which the browser can fade where a background alone it can't. */
+   dot at each end, so a link that wraps gets it on every line. It fades in over a tenth of a second while rising
+   2 points into place from below: its colour and its lift are registered properties, which the browser can animate
+   where a background alone it can't. The link reaches 2 points lower than the line's resting place, so the line has
+   room to start from there. */
 @property --underline { syntax: "<color>"; inherits: false; initial-value: transparent; }
+@property --underline-lift { syntax: "<length>"; inherits: false; initial-value: 0px; }
 .hero .soon a, .faq a, .doc a, .legal-links .credit a {
-  text-decoration: none; padding-bottom: 4px;
+  text-decoration: none; padding-bottom: 6px;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
   background-image:
     radial-gradient(circle closest-side, var(--underline) 92%, transparent),
     radial-gradient(circle closest-side, var(--underline) 92%, transparent),
     linear-gradient(var(--underline), var(--underline));
   background-repeat: no-repeat;
-  background-position: left bottom, right bottom, center bottom;
+  background-position: left 0 bottom var(--underline-lift), right 0 bottom var(--underline-lift), center bottom var(--underline-lift);
   background-size: 1.5px 1.5px, 1.5px 1.5px, calc(100% - 1.5px) 1.5px;
-  transition: --underline 0.1s ease;
+  transition: --underline 0.1s ease, --underline-lift 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-:is(.hero .soon a, .faq a, .doc a, .legal-links .credit a):is(:hover, :focus-visible) { --underline: var(--accent); }
+:is(.hero .soon a, .faq a, .doc a, .legal-links .credit a):is(:hover, :focus-visible) {
+  --underline: var(--accent); --underline-lift: 2px;
+}
 
 /* The home page: the app icon, the headline and the line under it, then the video. */
 .hero {
