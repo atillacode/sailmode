@@ -74,17 +74,24 @@ body::before {
 .legal-links .credit { flex-basis: 100%; margin: 0 0 8px; text-align: center; font-size: 13px; }
 .legal-links .credit a { opacity: 1; color: var(--accent); font-weight: 500; }
 
-/* The other links: the accent colour, no underline, and pointed at, a pill of the same colour behind them, a fifth as
-   strong. The pill sits snugly, about as far from the word at its ends as above and below it (the line's own space
-   above and below the letters makes up the rest), reaches past the word without moving it, and wraps with it. */
+/* The other links: the accent colour, and pointed at, a 2-point line under them with round ends, a little further
+   below the letters than a plain underline, clear of g, p and y. It's drawn as the link's background, a bar with a
+   dot at each end, so a link that wraps gets it on every line, and it fades in over a tenth of a second: its colour
+   is a registered property, which the browser can fade where a background alone it can't. */
+@property --underline { syntax: "<color>"; inherits: false; initial-value: transparent; }
 .hero .soon a, .faq a, .doc a, .legal-links .credit a {
-  text-decoration: none; border-radius: 999px; padding: 0.04em 0.3em; margin: -0.04em -0.3em;
+  text-decoration: none; padding-bottom: 2px;
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
-  transition: background-color 0.2s ease;
+  background-image:
+    radial-gradient(circle closest-side, var(--underline) 92%, transparent),
+    radial-gradient(circle closest-side, var(--underline) 92%, transparent),
+    linear-gradient(var(--underline), var(--underline));
+  background-repeat: no-repeat;
+  background-position: left bottom, right bottom, center bottom;
+  background-size: 2px 2px, 2px 2px, calc(100% - 2px) 2px;
+  transition: --underline 0.1s ease;
 }
-:is(.hero .soon a, .faq a, .doc a, .legal-links .credit a):is(:hover, :focus-visible) {
-  background-color: color-mix(in srgb, currentColor 20%, transparent);
-}
+:is(.hero .soon a, .faq a, .doc a, .legal-links .credit a):is(:hover, :focus-visible) { --underline: var(--accent); }
 
 /* The home page: the app icon, the headline and the line under it, then the video. */
 .hero {
