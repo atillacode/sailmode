@@ -52,6 +52,9 @@
    is nearly one colour. Around the page (beside it in Safari's sidebar on iPhone Duo, under its toolbar, and when
    pulled past an end) Safari shows the page's own background colour: that follows the scroll, the colour of the sky
    where one is (site.js sets --edge-from, --edge-to and --edge-at). */
+/* Nothing sticks out sideways, not even for a moment mid-swap: Safari on a wide screen (iPad, iPhone Duo) would
+   otherwise shrink the whole page to fit it, which looks zoomed out. With shrink-to-fit=no in each page's viewport tag. */
+html, body { overflow-x: clip; }
 html {
   -webkit-text-size-adjust: 100%;
   background-color: var(--sky-top);
