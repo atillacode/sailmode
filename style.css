@@ -48,17 +48,19 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; background: var(--sky-top); }
-/* Pulled past the bottom, Safari shows this colour: the sky's end once past the middle, as site.js marks. */
-html.past-middle { background: var(--sky-end); }
+/* The sky runs down the whole page, from its top colour at the very top to its end at the very bottom, so each screen
+   is nearly one colour. Around the page (beside it in Safari's sidebar on iPhone Duo, under its toolbar, and when
+   pulled past an end) Safari shows the page's own background colour: that follows the scroll, the colour of the sky
+   where one is (site.js sets --edge-from, --edge-to and --edge-at). */
+html {
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--sky-top);
+  background-color: color-mix(in oklab, var(--edge-from, var(--sky-top)), var(--edge-to, var(--sky-mid)) var(--edge-at, 0%));
+}
 body {
   margin: 0; min-height: 100vh; min-height: 100svh;
   display: flex; flex-direction: column;
   color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased;
-}
-/* The sky stays put behind the page as it scrolls, on iPhone too (where a fixed background doesn't). */
-body::before {
-  content: ""; position: fixed; inset: 0; z-index: -1;
   background: linear-gradient(var(--sky-top) 0%, var(--sky-mid) 55%, var(--sky-end) 100%);
 }
 

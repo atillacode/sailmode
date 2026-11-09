@@ -2,11 +2,18 @@
 
 const root = document.documentElement;
 
-// Pulled past the top or the bottom (rubber-band scrolling), Safari and Chrome show the page's own background colour
-// there. The sky runs from aqua at the top to nearly white at the bottom, so that colour follows the scroll: the sky's
-// top until the middle of the page, its end after it (html.past-middle in style.css).
+// The colour around the page, which Safari shows beside it (the sidebar on iPhone Duo), under its toolbar and past its
+// ends: the sky's colour where one is on the page. The sky runs from --sky-top (the very top) through --sky-mid (55 %
+// down) to --sky-end (the very bottom), as in style.css. The colour is taken from where the screen's top edge is at the
+// top of the page, its middle halfway down, and its bottom edge at the end, so pulled past either end it matches too.
 const followScroll = () => {
-  root.classList.toggle("past-middle", scrollY > (root.scrollHeight - innerHeight) / 2);
+  const page = root.scrollHeight, range = page - innerHeight;
+  const along = range > 0 ? Math.min(1, Math.max(0, scrollY / range)) : 0;
+  const at = page > 0 ? (scrollY + innerHeight * along) / page : 0;
+  const [from, to, part] = at <= 0.55 ? ["--sky-top", "--sky-mid", at / 0.55] : ["--sky-mid", "--sky-end", (at - 0.55) / 0.45];
+  root.style.setProperty("--edge-from", `var(${from})`);
+  root.style.setProperty("--edge-to", `var(${to})`);
+  root.style.setProperty("--edge-at", `${(Math.min(1, Math.max(0, part)) * 100).toFixed(1)}%`);
 };
 addEventListener("scroll", followScroll, { passive: true });
 addEventListener("resize", followScroll);
