@@ -370,8 +370,13 @@
     stream(playing);
     playing.muted = false;
     if (canFade) { cancelAnimationFrame(fades.get(playing)); playing.volume = 0; }
-    // Where the browser still says no, the film plays without sound and the sound button turns it on.
-    playing.play().catch(() => { playing.muted = true; playing.play().catch(() => {}); });
+    // Where the browser still says no, the film plays without sound and the sound button turns it on; where it won't
+    // play at all, it stays paused, undimmed. A film that was still playing, on its way out, is woken by its play()
+    // too, as it sends no "playing" again.
+    playing.play().then(() => wakeSoon(next)).catch(() => {
+      playing.muted = true;
+      playing.play().then(() => wakeSoon(next)).catch(() => wake(next));
+    });
     shape();
     const radiusAfter = radii();
 
@@ -534,6 +539,28 @@
     }, after));
   }
 
+  // A film that came to the middle wakes: its dimming lifts and its sound fades up from silence, once it plays, or at
+  // once if it's paused instead (then its sound is simply back at full, for when it plays). Either way the loading
+  // circle goes. It's woken by its "playing", by its play() going through, or by a pause, whichever comes first.
+  function wake(film) {
+    clearTimeout(waits.get(film));
+    film.classList.remove("is-loading");
+    if (!film.classList.contains("is-waking")) return;
+    film.classList.remove("is-waking");
+    const video = film.querySelector("video");
+    if (!canFade || video.muted) return;
+    cancelAnimationFrame(fades.get(video));
+    if (video.paused) video.volume = 1; else fade(video, 1, duration);
+  }
+  // Playing: wake with its first frame on screen, or after a quarter of a second, whichever comes first (a tab in the
+  // background draws no frames, and the dimming mustn't wait for one).
+  function wakeSoon(film) {
+    const video = film.querySelector("video");
+    let woken = false;
+    const go = () => { if (!woken) { woken = true; if (!video.paused) wake(film); } };
+    if (video.requestVideoFrameCallback) { video.requestVideoFrameCallback(go); setTimeout(go, 250); } else go();
+  }
+
   function showControls(film, hold = 2200) {
     // Only on the big film, and not mid-swap or mid-swipe: the coming film gets them once it has landed.
     if (!film.classList.contains("is-big") || container.classList.contains("swapping") || swipe?.live) return;
@@ -595,24 +622,11 @@
     ["play", "pause"].forEach((type) => video.addEventListener(type, () => { paint(); showControls(film); }));
     // Playing for real, from the first frame on screen: the dimming of a film that just came to the middle lifts and
     // its sound fades up, and any loading circle goes.
-    video.addEventListener("playing", () => {
-      let woken = false;
-      const wake = () => {
-        if (woken) return;
-        woken = true;
-        clearTimeout(waits.get(film));
-        film.classList.remove("is-loading");
-        if (!film.classList.contains("is-waking") || !film.classList.contains("is-big")) return;
-        film.classList.remove("is-waking");
-        if (canFade && !video.muted) fade(video, 1, duration);
-      };
-      // The first frame on screen, or a quarter of a second, whichever comes first: a tab in the background draws no
-      // frames, and the dimming mustn't wait for one.
-      if (video.requestVideoFrameCallback) { video.requestVideoFrameCallback(wake); setTimeout(wake, 250); } else wake();
-    });
+    video.addEventListener("playing", () => wakeSoon(film));
     // Stuck waiting for the stream mid-film: the circle, if it lasts.
     video.addEventListener("waiting", () => expect(film, 500));
-    video.addEventListener("pause", () => { clearTimeout(waits.get(film)); film.classList.remove("is-loading"); });
+    // Paused, also before it ever played: no dimming and no circle on the big film, and its sound ready at full.
+    video.addEventListener("pause", () => wake(film));
     // Sound turned on or off; a fade's volume steps change nothing here.
     let wasMuted = video.muted;
     video.addEventListener("volumechange", () => {
