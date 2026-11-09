@@ -49,6 +49,8 @@
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; background: var(--sky-top); }
+/* Pulled past the bottom, Safari shows this colour: the sky's end once past the middle, as site.js marks. */
+html.past-middle { background: var(--sky-end); }
 body {
   margin: 0; min-height: 100vh; min-height: 100svh;
   display: flex; flex-direction: column;
@@ -104,6 +106,66 @@ body::before {
   border-radius: 44px;
 }
 .hero video.squircle { border-radius: 0; }
+
+/* What testers say, under the film: each quote a line as large as the subline, centred, with who said it under it.
+   No heading and no cards; still, like the rest of the page. */
+.quotes {
+  width: min(720px, 100%); margin-top: clamp(88px, 12vw, 128px);
+  display: flex; flex-direction: column; align-items: center; gap: clamp(40px, 6vw, 56px);
+}
+.quote { margin: 0; }
+.quote blockquote { max-width: 34ch; margin: 0 auto; font-size: clamp(16px, 4.5vw, 24px); line-height: 1.4; text-wrap: balance; }
+.quote figcaption { margin-top: 12px; font-size: 15px; line-height: 1.3; color: var(--quiet); }
+.quote .who { font-weight: 600; color: var(--ink); }
+
+/* Questions and answers under the quotes: each group a white card on the sky. A question opens on tap with a spring
+   that doesn't bounce (site.js), the answer fading in as it unfolds; without motion it opens at once. */
+.faq { width: min(720px, 100%); margin-top: clamp(88px, 12vw, 128px); text-align: left; }
+.faq h2 {
+  margin: 0; text-align: center; text-wrap: balance;
+  font-size: clamp(28px, 4.4vw, 40px); line-height: 1.12; font-weight: 600; letter-spacing: -0.02em;
+}
+.faq h3 { margin: 40px 0 10px 4px; font-size: 15px; line-height: 1.3; font-weight: 600; color: var(--quiet); }
+.faq-card { padding: 0 22px; background: var(--card); border: 0.5px solid var(--card-edge); border-radius: 22px; }
+.faq details + details { border-top: 0.5px solid color-mix(in srgb, var(--ink) 12%, transparent); }
+.faq summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 18px 0; list-style: none; cursor: pointer;
+  font-size: 17px; line-height: 1.35; font-weight: 600;
+}
+.faq summary::-webkit-details-marker { display: none; }
+/* A chevron with round ends that points down, and flips over to point up once open, on the same spring: turned about
+   its horizontal axis in perspective, like a card turned over. */
+.faq summary::after {
+  --chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 8'%3E%3Cpath d='M1.5 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  content: ""; flex: none; width: 13px; height: 8px; margin-right: 2px;
+  background: var(--quiet);
+  -webkit-mask: var(--chevron) center / contain no-repeat;
+  mask: var(--chevron) center / contain no-repeat;
+  transform: perspective(40px) rotateX(0deg);
+}
+.faq details[open]:not([data-state="closed"]) summary::after { transform: perspective(40px) rotateX(180deg); }
+/* Each way as long as the answer's spring (site.js): opening a little slower than closing. */
+@media (prefers-reduced-motion: no-preference) {
+  .faq summary::after { transition: transform 0.23s var(--spring, ease-out); }
+  .faq details[open]:not([data-state="closed"]) summary::after { transition-duration: 0.38s; }
+}
+.faq summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+/* The answer's box is what the spring opens, so nothing in it may stick out. */
+.faq .answer { overflow: hidden; }
+.faq .answer p, .faq .answer ul { max-width: 60ch; margin: 0; font-size: 16px; line-height: 1.55; color: var(--quiet); }
+.faq .answer > :not(:first-child) { margin-top: 12px; }
+.faq .answer > :last-child { padding-bottom: 20px; }
+.faq .answer ul { padding-left: 20px; }
+.faq .answer li + li { margin-top: 4px; }
+.faq a { color: var(--accent); font-weight: 500; text-decoration: none; }
+.faq a:hover { text-decoration: underline; text-underline-offset: 2px; }
+.faq-more { margin: 40px 0 0; text-align: center; font-size: 15px; line-height: 1.4; color: var(--quiet); }
+@media (max-width: 480px) {
+  .faq-card { padding: 0 18px; }
+  .faq summary { font-size: 16px; }
+  .faq .answer p, .faq .answer ul { font-size: 15px; }
+}
 
 /* The legal pages: Sailmode at the top, the text on a white card, as the setup's cards sit on the sky. */
 .doc-top {

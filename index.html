@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=b24c8f9b7b">
+<link rel="stylesheet" href="style.css?v=418e4d7d56">
 </head>
 <body>
 <main class="hero">
@@ -36,6 +36,105 @@
            poster="https://image.mux.com/DCnfx5K902mAhsEwyORH02yMQuy8ZYXogjqS602QhKj2g00/thumbnail.webp?time=0&amp;width=1920"
            aria-label="Sailmode on iPhone Duo"></video>
   </div>
+
+  <!-- What testers say, word for word ("…" marks a cut), each with the name to show. -->
+  <section class="quotes" aria-label="What testers say">
+    <figure class="quote">
+      <blockquote>“This app is genuinely incredible… it has absolutely exceeded my expectations.”</blockquote>
+      <figcaption><span class="who">Ethan B.</span></figcaption>
+    </figure>
+    <figure class="quote">
+      <blockquote>“He’s just built a remote desktop app better than the ones that have been out for years.”</blockquote>
+      <figcaption><span class="who">Jose</span></figcaption>
+    </figure>
+    <figure class="quote">
+      <blockquote>“Wasn’t expecting this to be nearly as polished or complete as it is. … Love the app switcher on the Duo keyboard.”</blockquote>
+      <figcaption><span class="who">Bijan M.</span></figcaption>
+    </figure>
+    <figure class="quote">
+      <blockquote>“This app makes me think about buying iPhone Duo.”</blockquote>
+      <figcaption><span class="who">Irfan</span></figcaption>
+    </figure>
+  </section>
+
+  <!-- Questions people ask before they hand Sailmode their Mac. Written to Docs/writing-guide.md; each opens on tap. -->
+  <section class="faq" aria-labelledby="faq-title">
+    <h2 id="faq-title">Questions and answers.</h2>
+
+    <h3>Getting started</h3>
+    <div class="faq-card">
+      <details>
+        <summary>What is Sailmode?</summary>
+        <div class="answer"><p>Sailmode shows your Mac's screen on your iPhone or iPad, with a real Mac keyboard and trackpad below it. Type, click, scroll and dictate as if you were sitting at your Mac, from the next room or, with Tailscale, from anywhere.</p></div>
+      </details>
+      <details>
+        <summary>Is it made for iPhone Duo?</summary>
+        <div class="answer"><p>Yes. Sailmode began on iPhone Duo: fold it partway, stand it on a table, and it becomes a tiny laptop, with your Mac's screen on top and the keyboard below. It also works on other iPhones and on iPad, each with its own layout.</p></div>
+      </details>
+      <details>
+        <summary>What do I need?</summary>
+        <div class="answer"><p>An iPhone or iPad on iOS or iPadOS 27.1 or later, and a Mac with Apple silicon on macOS 26 or later. On the Mac you install Sailmode for Mac. It's free, and the app on your iPhone or iPad helps you get it there.</p></div>
+      </details>
+      <details>
+        <summary>How do I set it up?</summary>
+        <div class="answer"><p>It's as simple as it gets, and made for everyone, not only for tech experts. Install Sailmode for Mac, allow the two permissions it asks for, and scan the code it shows with your iPhone or iPad. If your iPhone or iPad uses the same Apple Account as your Mac, it finds your Mac by itself, with no code at all: click Allow on your Mac, and that's it.</p><p>No Sailmode account, no server to set up, no ports to open and no router settings. From then on, Sailmode connects by itself. Away from home, Tailscale needs a free account of its own, and Sailmode shows you each step.</p></div>
+      </details>
+    </div>
+
+    <h3>Privacy and security</h3>
+    <div class="faq-card">
+      <details>
+        <summary>How secure is Sailmode?</summary>
+        <div class="answer"><p>Sailmode is built so your Mac opens up only to you.</p><ul><li>Only your devices: an iPhone or iPad has to be allowed on your Mac before it can connect, with a one-time code from your Mac's screen or through your own Apple Account.</li><li>Locked on the way: everything is end-to-end encrypted, with the same strong encryption that keeps online banking safe.</li><li>A key that never leaves: each iPhone or iPad proves who it is with a secret key kept in its own security chip.</li><li>Hidden elsewhere: your Mac answers only on your home networks, your own Tailscale network or a USB cable. Your home network is the one where you set it up; on any other Wi-Fi, such as a café's or hotel's, it stays hidden.</li><li>You're in charge: one switch in your Mac's menu bar turns Sailmode off, and you can remove any device at any time.</li></ul></div>
+      </details>
+      <details>
+        <summary>Who can see my Mac's screen?</summary>
+        <div class="answer"><p>Only the iPhones and iPads you've allowed on your Mac. Your Mac's screen goes from your Mac to your device, end-to-end encrypted, with no Sailmode server in between, so nobody else can look in, not even Sailmode.</p></div>
+      </details>
+      <details>
+        <summary>Can people at home see what I'm doing?</summary>
+        <div class="answer"><p>No. While you use your Mac from somewhere else, Sailmode covers its screen, so nobody in the room can watch. When you're done, your Mac locks itself. Someone at your Mac can take it back by holding the space bar, but then they need your password.</p></div>
+      </details>
+      <details>
+        <summary>Does Sailmode collect my data?</summary>
+        <div class="answer"><p>No. There's no Sailmode server, so your data has nowhere to go but your own devices.</p><ul><li>No account, no sign-up, no email address.</li><li>No ads, no analytics, no tracking.</li><li>Your screen, your typing and your clipboard go between your iPhone or iPad and your Mac, end-to-end encrypted, never through a Sailmode server.</li><li>When you dictate, your voice is turned into text on your iPhone or iPad and never leaves it.</li></ul><p>The <a href="privacy/">Privacy Policy</a> has every detail.</p></div>
+      </details>
+    </div>
+
+    <h3>Using it</h3>
+    <div class="faq-card">
+      <details>
+        <summary>Can I use it away from home?</summary>
+        <div class="answer"><p>Yes. At home, Sailmode uses your Wi-Fi. To reach your Mac from anywhere, on mobile data or a café's Wi-Fi, install the Tailscale app on your Mac and on your iPhone or iPad, and sign in to both with the same free Tailscale account. Sailmode shows you each step. Close to your Mac with no internet? Plug in a USB cable.</p></div>
+      </details>
+      <details>
+        <summary>How much mobile data does it use?</summary>
+        <div class="answer"><p>You choose, with Data Mode: Full for the sharpest picture, Light for clear text with much less data, and Ultralight for the least data. On mobile data, Sailmode starts at Light by itself and shows how much data you've used.</p></div>
+      </details>
+      <details>
+        <summary>Can I type, click and dictate like on my Mac?</summary>
+        <div class="answer"><p>Yes. You get a real Mac keyboard with ⌘, ⌥ and the function row, and a trackpad with the gestures you know. Tap the mic and speak, and Sailmode types what you say. Your Mac's sound plays on your iPhone or iPad too, and copy and paste works both ways.</p></div>
+      </details>
+      <details>
+        <summary>Does my Mac have to stay on?</summary>
+        <div class="answer"><p>Yes, and Sailmode for Mac takes care of it: a desktop Mac stays reachable all the time, a MacBook while it's plugged in. If your Mac's screen has gone to sleep, tap the screen on your iPhone or iPad to wake it.</p></div>
+      </details>
+    </div>
+
+    <h3>Price and availability</h3>
+    <div class="faq-card">
+      <details>
+        <summary>How much does it cost?</summary>
+        <div class="answer"><p>You'll be able to buy Sailmode once and own it forever, or subscribe if you prefer. Prices will be announced soon.</p></div>
+      </details>
+      <details>
+        <summary>When can I get it?</summary>
+        <div class="answer"><p>Sailmode is in testing right now and close to release. Follow <a href="https://x.com/sailmode">@sailmode</a> on X to hear first.</p></div>
+      </details>
+    </div>
+
+    <p class="faq-more">Another question? Ask <a href="https://x.com/sailmode">@sailmode</a> on X.</p>
+  </section>
 </main>
 <footer class="legal-links">
   <a href="privacy/">Privacy Policy</a>
@@ -83,6 +182,7 @@
   shape();
   observeResize(video, shape);
 </script>
+<script src="site.js?v=4aadfd3f52"></script>
 <!-- Cloudflare Web Analytics: counts visits, without cookies. --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "142a9ddf4b6b43f39f963246700cc026"}'></script>
 </body>
 </html>
