@@ -196,8 +196,8 @@ body {
 .film.is-loading .film-wait { opacity: 1; animation-play-state: running; }
 @keyframes film-wait { to { rotate: 360deg; } }
 .film-play:focus-visible { outline: 3px solid #fff; outline-offset: -6px; }
-/* Pointing at the small film moves both films (translate and scale): the page's script does it, on a spring written
-   into keyframes, as CSS transitions jumped in Safari. During a swap they're off. */
+/* Pointing at the small film moves both films: the page's script does it, with transform on a spring written into
+   keyframes, as Safari doesn't draw translate and scale while they're animated. */
 .films.swapping .film { translate: none !important; scale: none !important; transition: none !important; }
 
 /* The film's own controls, Sailmode's instead of the browser's: one glass bar, well inside the film's corners, with

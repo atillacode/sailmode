@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=21add2f85d">
+<link rel="stylesheet" href="style.css?v=b206a00c0a">
 </head>
 <body>
 <main class="hero">
@@ -574,9 +574,10 @@
   // Pointing at the small film draws it 20 points toward the middle, a touch larger, its play button a touch larger
   // still, and the big one steps back to 99 % and 20 points the other way, making room, so the gap between them stays
   // about the same. Only with a pointer that hovers, the films side by side, and with motion.
-  // Each move runs on keyframes with the spring written into them, as the swap does, from wherever the films are, so
-  // pointing away mid-way turns it around. Not as CSS transitions: those, Safari (27.3) jumped straight to the end.
-  // It moves translate and scale, which add to the swap's own transform rather than fight it.
+  // Each move runs on keyframes with the spring written into them, from wherever the films are, so pointing away
+  // mid-way turns it around. It moves transform, as the swap does: Safari (27.3) doesn't draw translate and scale
+  // while they're animated, as CSS transitions it showed only the end, and as keyframes not even that. A swap clears
+  // it first, so the two never share a film.
   const pointable = matchMedia("(prefers-reduced-motion: no-preference) and (hover: hover) and (min-width: 721px)");
   const leanTime = 420;
   // The FAQ's spring (site.js): critically damped, a 0.25 s response, over 0.31 s of it, here stretched to 0.42 s.
@@ -586,16 +587,16 @@
     return Array.from({ length: steps + 1 }, (_, i) => ({ offset: i / steps, p: x((i / steps) * length) / x(length) }));
   })();
   const leaning = new Map();
+  const leanTo = (x, k) => `translate(${x.toFixed(3)}px, 0px) scale(${k.toFixed(5)})`;
   function lean(el, x, k) {
-    const now = getComputedStyle(el);
-    const fromX = now.translate === "none" ? 0 : parseFloat(now.translate) || 0;
-    const fromK = now.scale === "none" ? 1 : parseFloat(now.scale) || 1;
+    // Where it is now, also mid-way: the transform's matrix holds the scale first and the shift fifth.
+    const now = new DOMMatrixReadOnly(getComputedStyle(el).transform === "none" ? undefined : getComputedStyle(el).transform);
+    const fromX = now.e, fromK = now.a;
     leaning.get(el)?.cancel();
-    el.style.translate = x ? `${x}px 0` : "";
-    el.style.scale = k !== 1 ? `${k}` : "";
+    el.style.transform = x || k !== 1 ? leanTo(x, k) : "";
     if (Math.abs(fromX - x) < 0.01 && Math.abs(fromK - k) < 0.0001) return;
     leaning.set(el, el.animate(leanCurve.map(({ offset, p }) => ({
-      offset, translate: `${(fromX + (x - fromX) * p).toFixed(3)}px 0`, scale: (fromK + (k - fromK) * p).toFixed(5),
+      offset, transform: leanTo(fromX + (x - fromX) * p, fromK + (k - fromK) * p),
     })), { duration: leanTime }));
   }
   function point(film) {
@@ -615,7 +616,7 @@
       for (const el of [film, playIcon(film)]) {
         if (glide) { lean(el, 0, 1); continue; }
         leaning.get(el)?.cancel();
-        el.style.translate = el.style.scale = "";
+        el.style.transform = "";
       }
     }
   }
