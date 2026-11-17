@@ -29,8 +29,8 @@
 <main class="hero">
   <img class="icon" src="icon-hero.png?v=ef38507db9" width="224" height="224" alt="Sailmode">
   <h1>Sailmode for iPhone Duo.</h1>
-  <p class="sub"><span>The most delightful way to see and control</span> <span>your Mac from your iPhone or iPad.</span></p>
-  <p class="soon"><span>Coming soon.</span> <span>Follow <a href="https://x.com/sailmode">@sailmode</a> for more.</span></p>
+  <p class="sub"><span>The most delightful way to see</span> <span>and control your Mac from anywhere.</span></p>
+  <p class="soon"><span>Coming soon, also for iPhone and iPad.</span> <span>Follow <a href="https://x.com/sailmode">@sailmode</a> for more.</span></p>
   <!-- A film of every build sent to testers, the newest playing big in the middle, the earlier one small on its left,
        dimmed with a play button, and the build's name under the big one. Tapping the small one brings it to the
        middle and the big one to the other side (the script at the end of the page). -->
@@ -57,16 +57,20 @@
   <!-- What testers say, word for word ("…" marks a cut), each with the name to show. -->
   <section class="quotes" aria-label="What testers say">
     <figure class="quote">
+      <blockquote>“He’s just built a remote desktop app better than the ones that have been out for years.”</blockquote>
+      <figcaption><span class="who">Jose</span></figcaption>
+    </figure>
+    <figure class="quote">
+      <blockquote>“OMG I just tested this and might be one of the best Duo apps!”</blockquote>
+      <figcaption><span class="who">Fede</span></figcaption>
+    </figure>
+    <figure class="quote">
       <blockquote>“Having a lot of fun with Sailmode! Also everyone I’ve showed to legit thought it was a native Apple product… really great craft.”</blockquote>
       <figcaption><span class="who">Presh</span></figcaption>
     </figure>
     <figure class="quote">
       <blockquote>“This app is genuinely incredible… it has absolutely exceeded my expectations.”</blockquote>
       <figcaption><span class="who">Ethan B.</span></figcaption>
-    </figure>
-    <figure class="quote">
-      <blockquote>“He’s just built a remote desktop app better than the ones that have been out for years.”</blockquote>
-      <figcaption><span class="who">Jose</span></figcaption>
     </figure>
     <figure class="quote">
       <blockquote>“Wasn’t expecting this to be nearly as polished or complete as it is. … Love the app switcher on the Duo keyboard.”</blockquote>
@@ -85,8 +89,8 @@
       <figcaption><span class="who">Rudrank</span></figcaption>
     </figure>
     <figure class="quote">
-      <blockquote>“OMG I just tested this and might be one of the best Duo apps!”</blockquote>
-      <figcaption><span class="who">Fede</span></figcaption>
+      <blockquote>“I’ve been living off Sailmode the last week as well and it’s fantastic. My current setup is ghostty/herdr/Moshi/Sailmode for remote management of my agents and testing builds. Sailmode is so smooth and fast I can see realtime video and audio, which is exactly what I wanted!”</blockquote>
+      <figcaption><span class="who">Timothy</span></figcaption>
     </figure>
   </section>
 
@@ -548,9 +552,13 @@
   for (const film of films) {
     const play = film.querySelector(".film-play");
     play.addEventListener("click", () => swap(film));
-    // Pointing at the small film, or reaching it with the keyboard, starts loading it, so it's ready by the tap.
+    // Resting the pointer on the small film, or reaching it with the keyboard, starts loading it, so it's ready by the
+    // tap. Not at once on hover: starting a stream holds Safari up for a moment, which made the hover's first move jump.
+    // So it waits until that move (0.42 s) is over, and a pointer only passing by loads nothing.
     const warm = () => { if (film.classList.contains("is-small")) stream(film.querySelector("video")); };
-    film.addEventListener("pointerenter", warm);
+    let resting;
+    film.addEventListener("pointerenter", () => { clearTimeout(resting); resting = setTimeout(warm, 450); });
+    film.addEventListener("pointerleave", () => clearTimeout(resting));
     play.addEventListener("focus", warm);
   }
 
