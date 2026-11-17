@@ -23,13 +23,13 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=9a1b765d91">
+<link rel="stylesheet" href="style.css?v=21add2f85d">
 </head>
 <body>
 <main class="hero">
-  <img class="icon" src="icon-hero.png?v=ef38507db9" width="224" height="224" alt="Sailmode">
+  <img class="icon" src="icon-hero.png?v=5724e4657d" width="264" height="264" alt="Sailmode">
   <h1>Sailmode for iPhone Duo.</h1>
-  <p class="sub"><span>The most delightful way to see</span> <span>and control your Mac from anywhere.</span></p>
+  <p class="sub">The most delightful way to see<br class="phone-break"> and control<br class="wide-break"> your Mac from anywhere.</p>
   <p class="soon"><span>Coming soon, also for iPhone and iPad.</span> <span>Follow <a href="https://x.com/sailmode">@sailmode</a> for more.</span></p>
   <!-- A film of every build sent to testers, the newest playing big in the middle, the earlier one small on its left,
        dimmed with a play button, and the build's name under the big one. Tapping the small one brings it to the
@@ -556,32 +556,70 @@
     const play = film.querySelector(".film-play");
     play.addEventListener("click", () => swap(film));
     // Resting the pointer on the small film, or reaching it with the keyboard, starts loading it, so it's ready by the
-    // tap. Not at once on hover: starting a stream holds Safari up for a moment, which made the hover's first move jump.
-    // So it waits until that move (0.42 s) is over, and a pointer only passing by loads nothing.
+    // tap. Not at once on hover: starting a stream holds Safari up for a moment, right as the hover's move begins. So
+    // it waits until that move (0.42 s) is over, and a pointer only passing by loads nothing.
     const warm = () => { if (film.classList.contains("is-small")) stream(film.querySelector("video")); };
     let resting;
     film.addEventListener("pointerenter", (event) => {
       clearTimeout(resting); resting = setTimeout(warm, 450);
-      // Pointing at the small film: it steps toward the middle and the big one makes room (style.css). Marked here
-      // rather than left to :hover, which in Safari jumped the first time instead of moving.
       if (event.pointerType !== "touch") point(film);
     });
     film.addEventListener("pointerleave", () => {
       clearTimeout(resting);
-      if (film.classList.contains("is-pointed")) unpoint();
+      if (film.classList.contains("is-pointed")) unpoint(true);
     });
     play.addEventListener("focus", warm);
   }
+
+  // Pointing at the small film draws it 20 points toward the middle, a touch larger, its play button a touch larger
+  // still, and the big one steps back to 99 % and 20 points the other way, making room, so the gap between them stays
+  // about the same. Only with a pointer that hovers, the films side by side, and with motion.
+  // Each move runs on keyframes with the spring written into them, as the swap does, from wherever the films are, so
+  // pointing away mid-way turns it around. Not as CSS transitions: those, Safari (27.3) jumped straight to the end.
+  // It moves translate and scale, which add to the swap's own transform rather than fight it.
+  const pointable = matchMedia("(prefers-reduced-motion: no-preference) and (hover: hover) and (min-width: 721px)");
+  const leanTime = 420;
+  // The FAQ's spring (site.js): critically damped, a 0.25 s response, over 0.31 s of it, here stretched to 0.42 s.
+  const leanCurve = (() => {
+    const omega = (2 * Math.PI) / 0.25, length = 0.31, x = (t) => 1 - (1 + omega * t) * Math.exp(-omega * t);
+    const steps = Math.round(leanTime / 8);
+    return Array.from({ length: steps + 1 }, (_, i) => ({ offset: i / steps, p: x((i / steps) * length) / x(length) }));
+  })();
+  const leaning = new Map();
+  function lean(el, x, k) {
+    const now = getComputedStyle(el);
+    const fromX = now.translate === "none" ? 0 : parseFloat(now.translate) || 0;
+    const fromK = now.scale === "none" ? 1 : parseFloat(now.scale) || 1;
+    leaning.get(el)?.cancel();
+    el.style.translate = x ? `${x}px 0` : "";
+    el.style.scale = k !== 1 ? `${k}` : "";
+    if (Math.abs(fromX - x) < 0.01 && Math.abs(fromK - k) < 0.0001) return;
+    leaning.set(el, el.animate(leanCurve.map(({ offset, p }) => ({
+      offset, translate: `${(fromX + (x - fromX) * p).toFixed(3)}px 0`, scale: (fromK + (k - fromK) * p).toFixed(5),
+    })), { duration: leanTime }));
+  }
   function point(film) {
-    if (!film.classList.contains("is-small") || container.classList.contains("swapping")) return;
+    if (!pointable.matches || !film.classList.contains("is-small") || container.classList.contains("swapping")) return;
     film.classList.add("is-pointed");
-    container.dataset.pointed = film.classList.contains("is-left") ? "left" : "right";
+    const toward = film.classList.contains("is-left") ? 20 : -20;
+    lean(film, toward, 1.04);
+    lean(playIcon(film), 0, 1.08);
+    const big = films.find((other) => other.classList.contains("is-big"));
+    if (big) lean(big, toward, 0.99);
   }
-  // A swap ends the pointing: the films trade places, and whichever then lies under the pointer is marked anew.
-  function unpoint() {
-    films.forEach((film) => film.classList.remove("is-pointed"));
-    delete container.dataset.pointed;
+  // Pointing away glides them back. A swap ends the pointing at once, its own move taking over from where they are;
+  // whichever film then lies under the pointer is pointed at anew as it lands.
+  function unpoint(glide = false) {
+    for (const film of films) {
+      film.classList.remove("is-pointed");
+      for (const el of [film, playIcon(film)]) {
+        if (glide) { lean(el, 0, 1); continue; }
+        leaning.get(el)?.cancel();
+        el.style.translate = el.style.scale = "";
+      }
+    }
   }
+  pointable.addEventListener("change", () => unpoint());
 
   // Sailmode's own controls, on each film; only the big film's show.
   const icons = {

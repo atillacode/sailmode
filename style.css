@@ -109,19 +109,22 @@ body {
   padding: max(12vh, 64px) max(16px, env(safe-area-inset-right)) 0 max(16px, env(safe-area-inset-left));
 }
 /* The icon at 144 points with the setup's soft shadow drawn into the picture (Tools/Website/shadowed-icon.swift)
-   and 40 points around it for that shadow, taken back by the margin: a CSS shadow, Safari cut off at the picture's
+   and 60 points around it for that shadow, taken back by the margin: a CSS shadow, Safari cut off at the picture's
    edges for a moment after loading. */
-.hero .icon { display: block; width: 224px; height: 224px; margin: -40px; }
+.hero .icon { display: block; width: 264px; height: 264px; margin: -60px; }
 .hero h1 {
   margin: 32px 0 0; max-width: 17ch; text-wrap: balance;
   font-size: clamp(32px, 5.4vw, 56px); line-height: 1.08; font-weight: 600; letter-spacing: -0.025em;
 }
-/* Two lines, the first the longer, narrowing like a funnel; small enough on a phone that each stays one line. */
+/* Two lines, small enough on a phone that each stays one line. Side by side, the first the longer, narrowing like a
+   funnel ("…to see and control / your Mac from anywhere."); on a phone the break comes after "to see", so the
+   second line isn't left short. */
 .hero .sub {
   margin: 14px 0 0;
   font-size: clamp(16px, 4.5vw, 24px); line-height: 1.4; color: var(--quiet);
 }
-.hero .sub span { display: block; }
+@media (max-width: 720px) { .hero .sub .wide-break { display: none; } }
+@media (min-width: 721px) { .hero .sub .phone-break { display: none; } }
 .hero .soon { margin: 28px 0 0; font-size: 15px; line-height: 1.4; color: var(--quiet); }
 .hero .soon span { display: block; }
 .hero .soon span + span { margin-top: 4px; }
@@ -193,21 +196,8 @@ body {
 .film.is-loading .film-wait { opacity: 1; animation-play-state: running; }
 @keyframes film-wait { to { rotate: 360deg; } }
 .film-play:focus-visible { outline: 3px solid #fff; outline-offset: -6px; }
-/* Pointing at the small film draws it 20 points toward the middle, a touch larger, its play button a touch larger
-   still, and the big one steps back to 99 %
-   and 20 points the other way, making room, so the gap between them stays about the same. These use translate and
-   scale, which add to the swap's own transform rather than fight it; during a swap they're off.
-   The page's script marks the pointed-at film (is-pointed) and which side it's on (data-pointed on .films), rather
-   than :hover and :has(:hover) doing it: from those, Safari let the first hover jump straight to the end. */
-@media (prefers-reduced-motion: no-preference) and (hover: hover) and (min-width: 721px) {
-  .film { transition: translate 0.42s var(--spring, ease-out), scale 0.42s var(--spring, ease-out); }
-  .film.is-small.is-right.is-pointed { translate: -20px 0; scale: 1.04; }
-  .film.is-small.is-left.is-pointed { translate: 20px 0; scale: 1.04; }
-  .films[data-pointed="right"] .film.is-big { translate: -20px 0; scale: 0.99; }
-  .films[data-pointed="left"] .film.is-big { translate: 20px 0; scale: 0.99; }
-  .film-play svg { transition: scale 0.42s var(--spring, ease-out), opacity 0.2s ease; }
-  .film.is-small.is-pointed .film-play svg { scale: 1.08; }
-}
+/* Pointing at the small film moves both films (translate and scale): the page's script does it, on a spring written
+   into keyframes, as CSS transitions jumped in Safari. During a swap they're off. */
 .films.swapping .film { translate: none !important; scale: none !important; transition: none !important; }
 
 /* The film's own controls, Sailmode's instead of the browser's: one glass bar, well inside the film's corners, with
