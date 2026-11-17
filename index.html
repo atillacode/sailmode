@@ -23,7 +23,7 @@
 <meta name="twitter:image:alt" content="Sailmode for iPhone Duo. The most delightful way to see and control your Mac from your iPhone or iPad.">
 <link rel="icon" type="image/png" href="favicon.png?v=6fe44937cc">
 <link rel="preconnect" href="https://stream.mux.com">
-<link rel="stylesheet" href="style.css?v=e74117acd4">
+<link rel="stylesheet" href="style.css?v=9a1b765d91">
 </head>
 <body>
 <main class="hero">
@@ -366,6 +366,7 @@
     const before = new Map(films.map((film) => [film, film.getBoundingClientRect()]));
     const radiusBefore = shown ?? radii();
     films.forEach((film) => { film.style.translate = film.style.scale = film.style.transition = playIcon(film).style.transform = ""; });
+    unpoint();
     films.forEach((film) => [film, film.querySelector(".film-clip"), playIcon(film)].forEach((el) =>
       el.getAnimations().forEach((animation) => animation.cancel())));
 
@@ -424,6 +425,8 @@
 
     const land = () => {
       container.classList.remove("swapping");
+      // The pointer resting on the film that's now small: it steps toward the middle, as on pointing at it.
+      films.forEach((film) => { if (film.matches(":hover")) point(film); });
       // Landed and still not playing: the loading circle, if it doesn't start in a moment.
       expect(next, 250);
       showControls(next);
@@ -557,9 +560,27 @@
     // So it waits until that move (0.42 s) is over, and a pointer only passing by loads nothing.
     const warm = () => { if (film.classList.contains("is-small")) stream(film.querySelector("video")); };
     let resting;
-    film.addEventListener("pointerenter", () => { clearTimeout(resting); resting = setTimeout(warm, 450); });
-    film.addEventListener("pointerleave", () => clearTimeout(resting));
+    film.addEventListener("pointerenter", (event) => {
+      clearTimeout(resting); resting = setTimeout(warm, 450);
+      // Pointing at the small film: it steps toward the middle and the big one makes room (style.css). Marked here
+      // rather than left to :hover, which in Safari jumped the first time instead of moving.
+      if (event.pointerType !== "touch") point(film);
+    });
+    film.addEventListener("pointerleave", () => {
+      clearTimeout(resting);
+      if (film.classList.contains("is-pointed")) unpoint();
+    });
     play.addEventListener("focus", warm);
+  }
+  function point(film) {
+    if (!film.classList.contains("is-small") || container.classList.contains("swapping")) return;
+    film.classList.add("is-pointed");
+    container.dataset.pointed = film.classList.contains("is-left") ? "left" : "right";
+  }
+  // A swap ends the pointing: the films trade places, and whichever then lies under the pointer is marked anew.
+  function unpoint() {
+    films.forEach((film) => film.classList.remove("is-pointed"));
+    delete container.dataset.pointed;
   }
 
   // Sailmode's own controls, on each film; only the big film's show.

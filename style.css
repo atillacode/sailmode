@@ -196,15 +196,17 @@ body {
 /* Pointing at the small film draws it 20 points toward the middle, a touch larger, its play button a touch larger
    still, and the big one steps back to 99 %
    and 20 points the other way, making room, so the gap between them stays about the same. These use translate and
-   scale, which add to the swap's own transform rather than fight it; during a swap they're off. */
+   scale, which add to the swap's own transform rather than fight it; during a swap they're off.
+   The page's script marks the pointed-at film (is-pointed) and which side it's on (data-pointed on .films), rather
+   than :hover and :has(:hover) doing it: from those, Safari let the first hover jump straight to the end. */
 @media (prefers-reduced-motion: no-preference) and (hover: hover) and (min-width: 721px) {
   .film { transition: translate 0.42s var(--spring, ease-out), scale 0.42s var(--spring, ease-out); }
-  .film.is-small.is-right:hover { translate: -20px 0; scale: 1.04; }
-  .film.is-small.is-left:hover { translate: 20px 0; scale: 1.04; }
-  .films:has(.film.is-small.is-right:hover) .film.is-big { translate: -20px 0; scale: 0.99; }
-  .films:has(.film.is-small.is-left:hover) .film.is-big { translate: 20px 0; scale: 0.99; }
+  .film.is-small.is-right.is-pointed { translate: -20px 0; scale: 1.04; }
+  .film.is-small.is-left.is-pointed { translate: 20px 0; scale: 1.04; }
+  .films[data-pointed="right"] .film.is-big { translate: -20px 0; scale: 0.99; }
+  .films[data-pointed="left"] .film.is-big { translate: 20px 0; scale: 0.99; }
   .film-play svg { transition: scale 0.42s var(--spring, ease-out), opacity 0.2s ease; }
-  .film.is-small:hover .film-play svg { scale: 1.08; }
+  .film.is-small.is-pointed .film-play svg { scale: 1.08; }
 }
 .films.swapping .film { translate: none !important; scale: none !important; transition: none !important; }
 
